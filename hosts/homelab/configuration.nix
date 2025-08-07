@@ -58,7 +58,7 @@
   users.users.olek = {
     isNormalUser = true;
     description = "Alex Wardega";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" ];
     packages = with pkgs; [];
   };
 
@@ -85,12 +85,18 @@
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
+  # Static IP setup
   networking.useDHCP = false;
-
   networking.interfaces.enp4s0.ipv4.addresses = [{
   	address = "192.168.1.200";
 	prefixLength = 24;
   }];
+
+  virtualisation.docker.enable = true;
+  virtualisation.docker.rootless = {
+  	enable = true;
+  	setSocketVariable = true;
+  };
 
   networking.defaultGateway = "192.168.1.254";
   networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
