@@ -14,6 +14,8 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  boot.kernelModules = [ "nct6775" ];
+
   networking.hostName = "nixos_homelab"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
@@ -70,6 +72,7 @@
   environment.systemPackages = with pkgs; [
   vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   git
+  lm_sensors
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
