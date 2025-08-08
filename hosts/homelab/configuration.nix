@@ -148,12 +148,30 @@
             autoStart = true;
     	  };
 
+	  pihole = {
+	    image = "pihole/pihole:latest";
+  	    ports = [
+	      "53:53/tcp" # DNS TCP
+	      "53:53/udp" # DNS UDP
+	      "80:80/tcp" # Web interface
+	    ];
+	    environment = {
+	      TZ = "Pacific/Auckland";
+	      FTLCONF_webserver_api_password = "admin";
+	      FTLCONF_dns_listeningMode = "all";
+	    };
+	    volumes = [
+	      "/var/lib/pihole/etc-pihole:/etc/pihole"
+	    ];
+	    autoStart = true;
+	  };
+
 	};
   };
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 8080 21115 21116 21117 21118 21119 ];
-  networking.firewall.allowedUDPPorts = [ 21116 ];
+  networking.firewall.allowedTCPPorts = [ 53 80 8080 21115 21116 21117 21118 21119 ];
+  networking.firewall.allowedUDPPorts = [ 53 21116 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
