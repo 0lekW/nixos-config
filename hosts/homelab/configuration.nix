@@ -95,17 +95,30 @@
 	prefixLength = 24;
   }];
 
+  networking.defaultGateway = "192.168.1.254";
+  networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
+
+  # Docker
   virtualisation.docker.enable = true;
   virtualisation.docker.rootless = {
   	enable = true;
   	setSocketVariable = true;
   };
 
-  networking.defaultGateway = "192.168.1.254";
-  networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
+  virtualisation.oci-containers.backend = "docker";
+  virtualisation.oci-containers.containers.dashy = {
+  	image = "lissy93/dashy:latest";
+	ports = [ "8080:8080" ];
+	volumes = [
+	  "/var/lib/dashy/conf.yml:/app/user-data/conf.yml"
+	];
+	autoStart = true;
+        autoRemoveOnStop = false;
+        extraOptions = [ "--restart=always" ];
+  };
 
   # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
+  networking.firewall.allowedTCPPorts = [ 8080 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
