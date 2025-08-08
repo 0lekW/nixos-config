@@ -105,21 +105,55 @@
   	setSocketVariable = true;
   };
 
-  virtualisation.oci-containers.backend = "docker";
-  virtualisation.oci-containers.containers.dashy = {
-  	image = "lissy93/dashy:latest";
-	ports = [ "8080:8080" ];
-	volumes = [
-	  "/var/lib/dashy/conf.yml:/app/user-data/conf.yml"
-	];
-	autoStart = true;
-        autoRemoveOnStop = false;
-        extraOptions = [ "--restart=always" ];
+  virtualisation.oci-containers = {
+	backend = "docker";
+	containers = {
+
+	  dashy = {
+            image = "lissy93/dashy:latest";
+	    ports = [ "8080:8080" ];
+	    volumes = [
+	      "/var/lib/dashy/conf.yml:/app/user-data/conf.yml"
+	    ];
+	    autoStart = true;
+            autoRemoveOnStop = false;
+            extraOptions = [ "--restart=always" ];
+   	  };
+
+	  rustdesk-hbbs = {
+      	    image = "rustdesk/rustdesk-server:latest";
+      	    cmd = [ "hbbs" ];
+      	    volumes = [
+              "/var/lib/rustdesk:/root"
+      	    ];
+      	    ports = [
+              "21115:21115" # TCP, Rendezvous
+              "21116:21116" # TCP, Relay (not used on LAN, but required by clients)
+              "21116:21116/udp" # UDP Relay
+              "21118:21118" # TCP, API/Web console
+      	    ];
+      	    autoStart = true;
+    	  };
+
+	  rustdesk-hbbr = {
+      	    image = "rustdesk/rustdesk-server:latest";
+      	    cmd = [ "hbbr" ];
+      	    volumes = [
+              "/var/lib/rustdesk:/root"
+      	    ];
+            ports = [
+              "21117:21117" # TCP, Relay main
+              "21119:21119" # TCP, Secondary relay
+            ];
+            autoStart = true;
+    	  };
+
+	};
   };
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 8080 ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
+  networking.firewall.allowedTCPPorts = [ 8080 21115 21116 21117 21118 21119 ];
+  networking.firewall.allowedUDPPorts = [ 21116 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
