@@ -188,6 +188,22 @@
   	    autoStart = true;
 	  };
 
+	  jellyfin = {
+  	    image = "jellyfin/jellyfin:latest";
+  	    environment = {
+    	      TZ = "Pacific/Auckland";
+  	    };
+  	    volumes = [
+    	      "/var/lib/jellyfin/config:/config"    # configuration, users, metadata
+    	      "/srv/torrents:/media/torrents"       # point Jellyfin at torrent download dir
+  	    ];
+  	    ports = [
+    	      "8096:8096"   # Web UI / API (HTTP)
+    	      # "8920:8920" # HTTPS (optional, if you add certs later)
+  	    ];
+  	    autoStart = true;
+	  };
+
 	};
   };
 
