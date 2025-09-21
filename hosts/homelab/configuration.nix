@@ -224,6 +224,46 @@
   	    autoStart = true;
 	  };
 
+    nodeexporter = {
+      image = "prom/node-exporter:latest";
+      ports = [ "9100:9100" ];
+      volumes = [
+        "/proc:/host/proc:ro"
+        "/sys:/host/sys:ro"
+      ];
+      cmd = [
+        "--path.procfs=/host/proc"
+        "--path.sysfs=/host/sys"
+      ];
+      autoStart = true;
+    };
+
+    prometheus = {
+      image = "prom/prometheus:latest";
+      ports = [ "9090:9090" ];
+      volumes = [
+        "/var/lib/prometheus:/prometheus"
+        "/var/lib/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+      ];
+      autoStart = true;
+    };
+
+    grafana = {
+      image = "grafana/grafana:latest";
+      ports = [ "3000:3000" ];
+      volumes = [
+        "/var/lib/grafana:/var/lib/grafana"
+      ];
+      environment = {
+        TZ = "Pacific/Auckland";
+        GF_SECURITY_ALLOW_EMBEDDING = "true";
+        # Uncomment to allow viewing without login:
+        # GF_AUTH_ANONYMOUS_ENABLED = "true";
+        # GF_AUTH_ANONYMOUS_ORG_ROLE = "Viewer";
+      };
+      autoStart = true;
+    };
+
 
 	};
   };
@@ -252,11 +292,16 @@
 
     # File browser
     "d /var/lib/filebrowser 0755 olek docker - -"
+
+    # System monitoring
+    "d /var/lib/prometheus 0770 65534 65534 - -"
+    "f /var/lib/prometheus/prometheus.yml 0644 olek docker - -"
+    "d /var/lib/grafana 0755 olek docker - -"
   ];
 
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 53 6881 8080 8081 8082 8090 8091 21115 21116 21117 21118 21119 ]; # check docker for port allocations...
+  networking.firewall.allowedTCPPorts = [ 53 3000 6881 8080 8081 8082 8090 8091 9090 9100 21115 21116 21117 21118 21119 ]; # check docker for port allocations...
   networking.firewall.allowedUDPPorts = [ 53 6881 21116 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
