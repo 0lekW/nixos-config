@@ -167,12 +167,40 @@
 	    autoStart = true;
 	  };
 
+	  qbittorrent = {
+  	    image = "lscr.io/linuxserver/qbittorrent:latest";
+  	    environment = {
+    	      PUID = "1000";
+    	      PGID = "1000";
+    	      TZ = "Pacific/Auckland";
+    	      WEBUI_PORT = "8081";    
+    	      TORRENTING_PORT = "6881";
+  	    };
+  	    volumes = [
+    	      "/var/lib/qbittorrent/config:/config"
+    	      "/srv/torrents:/downloads"
+  	    ];
+  	    ports = [
+    	      "8081:8081"         # Web UI
+    	      "6881:6881"         # BitTorrent TCP
+    	      "6881:6881/udp"     # BitTorrent UDP
+  	    ];
+  	    autoStart = true;
+	  };
+
 	};
   };
 
+  # Ensure qBittorrent and download directories exist with correct permissions
+  systemd.tmpfiles.rules = [
+    "d /var/lib/qbittorrent 0755 olek docker - -"
+    "d /var/lib/qbittorrent/config 0755 olek docker - -"
+    "d /srv/torrents 0775 olek docker - -"
+  ];
+
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 53 8080 8082 21115 21116 21117 21118 21119 ]; # check docker for port allocations...
-  networking.firewall.allowedUDPPorts = [ 53 21116 ];
+  networking.firewall.allowedTCPPorts = [ 53 6881 8080 8081 8082 21115 21116 21117 21118 21119 ]; # check docker for port allocations...
+  networking.firewall.allowedUDPPorts = [ 53 6881 21116 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
