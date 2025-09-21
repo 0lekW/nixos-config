@@ -204,6 +204,27 @@
   	    autoStart = true;
 	  };
 
+	  filebrowser = {
+  	    image = "filebrowser/filebrowser:latest";
+  	    volumes = [
+    	      "/var/lib/filebrowser:/database"   # filebrowser.db + settings
+    	      "/srv:/srv"                        # browse your files under /srv
+  	    ];
+  	    ports = [ "8090:80" ];               # Web UI at http://192.168.1.200:8090
+  	    autoStart = true;
+	  };
+
+	  ttyd = {
+  	    image = "tsl0922/ttyd:latest";
+  	    volumes = [
+    	      "/srv:/srv" # access files in the terminal
+  	    ];
+  	    ports = [ "8091:7681" ]; # Web terminal at 8091
+  	    cmd = [ "ttyd" "-W" "bash" "-c" "cd /srv && exec bash" ];
+  	    autoStart = true;
+	  };
+
+
 	};
   };
 
@@ -228,11 +249,14 @@
     # Pi-hole
     "d /var/lib/pihole 0755 olek docker - -"
     "d /var/lib/pihole/etc-pihole 0755 olek docker - -"
+
+    # File browser
+    "d /var/lib/filebrowser 0755 olek docker - -"
   ];
 
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 53 6881 8080 8081 8082 21115 21116 21117 21118 21119 ]; # check docker for port allocations...
+  networking.firewall.allowedTCPPorts = [ 53 6881 8080 8081 8082 8090 8091 21115 21116 21117 21118 21119 ]; # check docker for port allocations...
   networking.firewall.allowedUDPPorts = [ 53 6881 21116 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
