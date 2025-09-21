@@ -191,12 +191,29 @@
 	};
   };
 
-  # Ensure qBittorrent and download directories exist with correct permissions
   systemd.tmpfiles.rules = [
+    # qBittorrent
     "d /var/lib/qbittorrent 0755 olek docker - -"
     "d /var/lib/qbittorrent/config 0755 olek docker - -"
     "d /srv/torrents 0775 olek docker - -"
+
+    # Jellyfin
+    "d /var/lib/jellyfin 0755 olek docker - -"
+    "d /var/lib/jellyfin/config 0755 olek docker - -"
+
+    # Dashy
+    "d /var/lib/dashy 0755 olek docker - -"
+    # If we store conf.yml in /var/lib/dashy/conf.yml as per config
+    # it will exist after first start, but we still ensure directory exists
+
+    # RustDesk
+    "d /var/lib/rustdesk 0755 olek docker - -"
+
+    # Pi-hole
+    "d /var/lib/pihole 0755 olek docker - -"
+    "d /var/lib/pihole/etc-pihole 0755 olek docker - -"
   ];
+
 
   # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [ 53 6881 8080 8081 8082 21115 21116 21117 21118 21119 ]; # check docker for port allocations...
