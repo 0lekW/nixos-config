@@ -262,9 +262,8 @@
       environment = {
         TZ = "Pacific/Auckland";
         GF_SECURITY_ALLOW_EMBEDDING = "true";
-        # Uncomment to allow viewing without login:
-        # GF_AUTH_ANONYMOUS_ENABLED = "true";
-        # GF_AUTH_ANONYMOUS_ORG_ROLE = "Viewer";
+        GF_AUTH_ANONYMOUS_ENABLED = "true";
+        GF_AUTH_ANONYMOUS_ORG_ROLE = "Viewer";
       };
       autoStart = true;
     };
