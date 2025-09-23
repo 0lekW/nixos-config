@@ -161,6 +161,8 @@
 	    environment = {
 	      TZ = "Pacific/Auckland";
 	      FTLCONF_webserver_api_password = "admin";
+        FTLCONF_webserver_api_max_sessions = "50";
+        FTLCONF_webserver_api_session_timeout = "300";
 	      FTLCONF_dns_listeningMode = "all";
 	      FTLCONF_webserver_port = "8082";
 	    };
@@ -300,7 +302,7 @@
     # System monitoring
     "d /var/lib/prometheus 0770 65534 65534 - -"
     "f /var/lib/prometheus/prometheus.yml 0644 olek docker - -"
-    "d /var/lib/grafana 0755 olek docker - -"
+    "d /var/lib/grafana 0755 472 472 - -"
   ];
 
 
