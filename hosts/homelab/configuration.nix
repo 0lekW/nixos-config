@@ -283,6 +283,7 @@
 
     # Dashy
     "d /var/lib/dashy 0755 olek docker - -"
+    "f /var/lib/dashy/conf.yml 0664 olek docker - -"
     # If we store conf.yml in /var/lib/dashy/conf.yml as per config
     # it will exist after first start, but we still ensure directory exists
 
