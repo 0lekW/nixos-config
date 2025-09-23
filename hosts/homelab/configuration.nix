@@ -101,6 +101,15 @@
   networking.defaultGateway = "192.168.1.254";
   networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
 
+  # Create the network for docker containers
+  systemd.services.create-homelab-network = {
+    serviceConfig.Type = "oneshot";
+    wantedBy = [ "multi-user.target" ];
+    script = ''
+      ${pkgs.docker}/bin/docker network ls | grep homelab || ${pkgs.docker}/bin/docker network create homelab
+    '';
+  };
+
   # Docker
   virtualisation.docker.enable = true;
   virtualisation.docker.rootless = {
@@ -120,7 +129,7 @@
 	    ];
 	    autoStart = true;
             autoRemoveOnStop = false;
-            extraOptions = [ "--restart=always" ];
+            extraOptions = [ "--restart=always" "--network=homelab" ];
    	  };
 
 	  rustdesk-hbbs = {
@@ -136,6 +145,7 @@
               "21118:21118" # TCP, API/Web console
       	    ];
       	    autoStart = true;
+            extraOptions = [ "--network=homelab" ];
     	  };
 
 	  rustdesk-hbbr = {
@@ -149,6 +159,7 @@
               "21119:21119" # TCP, Secondary relay
             ];
             autoStart = true;
+            extraOptions = [ "--network=homelab" ];
     	  };
 
 	  pihole = {
@@ -170,6 +181,7 @@
 	      "/var/lib/pihole/etc-pihole:/etc/pihole"
 	    ];
 	    autoStart = true;
+      extraOptions = [ "--network=homelab" ];
 	  };
 
 	  qbittorrent = {
@@ -191,6 +203,7 @@
     	      "6881:6881/udp"     # BitTorrent UDP
   	    ];
   	    autoStart = true;
+        extraOptions = [ "--network=homelab" ];
 	  };
 
 	  jellyfin = {
@@ -207,6 +220,7 @@
     	      # "8920:8920" # HTTPS (optional, if you add certs later)
   	    ];
   	    autoStart = true;
+        extraOptions = [ "--network=homelab" ];
 	  };
 
 	  filebrowser = {
@@ -217,6 +231,7 @@
   	    ];
   	    ports = [ "8090:80" ];               # Web UI at http://192.168.1.200:8090
   	    autoStart = true;
+        extraOptions = [ "--network=homelab" ];
 	  };
 
 	  ttyd = {
@@ -227,6 +242,7 @@
   	    ports = [ "8091:7681" ]; # Web terminal at 8091
   	    cmd = [ "ttyd" "-W" "bash" "-c" "cd /srv && exec bash" ];
   	    autoStart = true;
+        extraOptions = [ "--network=homelab" ];
 	  };
 
     nodeexporter = {
@@ -242,7 +258,7 @@
         "--path.sysfs=/host/sys"
         "--collector.hwmon"
       ];
-      extraOptions = [ "--privileged" ];
+      extraOptions = [ "--privileged" "--network=homelab" ];
       autoStart = true;
     };
 
@@ -254,6 +270,7 @@
         "/var/lib/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
       ];
       autoStart = true;
+      extraOptions = [ "--network=homelab" ];
     };
 
     grafana = {
@@ -269,6 +286,22 @@
         GF_AUTH_ANONYMOUS_ORG_ROLE = "Viewer";
       };
       autoStart = true;
+      extraOptions = [ "--network=homelab" ];
+    };
+
+    nginx-proxy-manager = {
+      image = "jc21/nginx-proxy-manager:latest";
+      ports = [ 
+        "80:80"     # HTTP
+        "443:443"   # HTTPS  
+        "81:81"     # Admin interface
+      ];
+      volumes = [
+        "/var/lib/nginx-proxy-manager/data:/data"
+        "/var/lib/nginx-proxy-manager/letsencrypt:/etc/letsencrypt"
+      ];
+      autoStart = true;
+      extraOptions = [ "--network=homelab" ];
     };
 
 
@@ -305,11 +338,16 @@
     "d /var/lib/prometheus 0770 65534 65534 - -"
     "f /var/lib/prometheus/prometheus.yml 0644 olek docker - -"
     "d /var/lib/grafana 0755 472 472 - -"
+
+    # Nginx Proxy Manager
+    "d /var/lib/nginx-proxy-manager 0755 olek docker - -"
+    "d /var/lib/nginx-proxy-manager/data 0755 olek docker - -"
+    "d /var/lib/nginx-proxy-manager/letsencrypt 0755 olek docker - -"
   ];
 
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 53 3000 6881 8080 8081 8082 8090 8091 9090 9100 21115 21116 21117 21118 21119 ]; # check docker for port allocations...
+  networking.firewall.allowedTCPPorts = [ 53 80 433 3000 6881 8080 8081 8082 8090 8091 9090 9100 21115 21116 21117 21118 21119 ]; # check docker for port allocations...
   networking.firewall.allowedUDPPorts = [ 53 6881 21116 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
