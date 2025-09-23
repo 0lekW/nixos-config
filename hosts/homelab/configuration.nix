@@ -235,11 +235,14 @@
       volumes = [
         "/proc:/host/proc:ro"
         "/sys:/host/sys:ro"
+        "/sys/class/hwmon:/host/sys/class/hwmon:ro"
       ];
       cmd = [
         "--path.procfs=/host/proc"
         "--path.sysfs=/host/sys"
+        "--collector.hwmon"
       ];
+      extraOptions = [ "--privileged" ];
       autoStart = true;
     };
 
