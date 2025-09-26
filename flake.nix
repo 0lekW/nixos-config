@@ -14,10 +14,10 @@
       ];
     };
 
-   nixosConfigurations.homelab2 = nixpkgs.lib.nixosSystem {
+   nixosConfigurations.homelab_zfs = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
-        ./hosts/homelab2/configuration.nix
+        ./hosts/homelab_zfs/configuration.nix
       ];
     };
   }; 
