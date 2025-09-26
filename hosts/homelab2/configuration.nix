@@ -136,7 +136,10 @@
   };
 };
 
-
+  systemd.tmpfiles.rules = [
+    "d /tank/media 0755 olek users -"
+    "d /tank/shared 0775 olek users -"
+  ];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
