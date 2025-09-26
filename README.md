@@ -6,7 +6,7 @@ This repository contains my personal NixOS flake-based system configurations.
 
 ### homelab
 **Hardware:** RYZEN 5500, 16GB DDR4 RAM, GTX 1060, 1TB NVMe SSD.  
-**Purpose:** Dashboard, DNS ad-blocking, remote access, and future services.
+**Purpose:** Dashboard and main services.
 
 **Currently configured:**
 - **Dashy** — Web dashboard at `http://home.olek.co.nz` or `http://<homelab-ip>:8080`
@@ -19,23 +19,23 @@ This repository contains my personal NixOS flake-based system configurations.
 - **Nginx** — Reverse proxy manager at `http://nginx.olek.co.nz` or `http://<homelab-ip>:81`
 - **FileBrowser** — Web UI file browser
 - **TTYD** — Web UI terminal
+- **Crafty Controller** — Web UI Minecraft Server hosting panel at `https://mc.olek.co.nz` or `http://<homelab-ip>:8000`
 
 **To-do (homelab):**
+- [ ] TTYD needs permissions fixed for new /srv/torrents mount
 - [ ] Remote access to services using Wireguard
 - [ ] Move service passwords to secrets management (sops-nix or agenix)
-- [ ] Add HDDs to machine + Setup NAS Storage
+- [ ] Add HDDs to machine
 - [ ] Self hosted LLM
-- [ ] Host Minecraft server (existing one) through cloudflare tunnel
 
-
-### homelab2
+### homelab_zfs
 **Hardware:** TODO.  
-**Purpose:** TODO. Machine not currently setup.
+**Purpose:** NAS File Storage
 
 **Currently configured:**
 - **Nothing**
 
-**To-do (homelab2):**
+**To-do (homelab_zfs):**
 - [ ] Everything.
 
 
