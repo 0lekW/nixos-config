@@ -16,8 +16,6 @@
 
   boot.kernelModules = [ "nct6775" ];
 
-  boot.supportedFilesystems = [ "nfs" ];
-
   networking.hostName = "nixos_homelab"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
@@ -89,22 +87,6 @@
   # };
 
   # List services that you want to enable:
-
-  # NFSv4 client mount: mount the NAS's fsid=0 (/) at /srv/torrents
-  fileSystems."/srv/torrents" = {
-    device = "192.168.1.201:/";  # ← use the NAS IP here (replace with yours)
-    fsType = "nfs4";
-    options = [
-      "noatime"
-      "_netdev"
-      "x-systemd.automount"
-      "x-systemd.idle-timeout=600"
-      "soft"
-      "timeo=600"
-      "x-systemd.requires=network-online.target"
-      "x-systemd.after=network-online.target"
-    ];
-  };
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
