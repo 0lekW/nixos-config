@@ -17,37 +17,32 @@ This repository contains my personal NixOS flake-based system configurations.
 - **Grafana** — Graphs for system monitoring at `http://graphs.olek.co.nz` or `http://<homelab-ip>:3000`
 - **Prometheus** — Pipeline to system hardware monitoring at `http://prometheus.olek.co.nz` or `http://<homelab-ip>:9090`
 - **Nginx** — Reverse proxy manager at `http://nginx.olek.co.nz` or `http://<homelab-ip>:81`
-- **FileBrowser** — Web UI file browser
-- **TTYD** — Web UI terminal
+- **FileBrowser** — Web UI file browser at `192.168.1.201::8090` or `https://files.olek.co.nz/` 
+- **TTYD** — Web UI terminal at `192.168.1.201::8091` or `https://terminal.olek.co.nz/` 
 - **Crafty Controller** — Web UI Minecraft Server hosting panel at `https://mc.olek.co.nz` or `http://<homelab-ip>:8000`
 
 **To-do (homelab):**
-- [ ] TTYD needs permissions fixed for new /srv/torrents mount
 - [ ] Remote access to services using Wireguard
-- [ ] Move service passwords to secrets management (sops-nix or agenix)
 - [ ] Add HDDs to machine
 - [ ] Self hosted LLM
 
 ### homelab_zfs
-**Hardware:** TODO.  
+**Hardware:** Intel(R) Xeon(R) E E-2414, 32GB DDR5 RAM, 4x460GB SSD.  
 **Purpose:** NAS File Storage
 
 **Currently configured:**
-- **Nothing**
+- **Samba** - NFS
+- **FileBrowser** - Web UI file browser at `192.168.1.201::8080` 
 
 **To-do (homelab_zfs):**
-- [ ] Everything.
-
+- [ ] - 
 
 ---
 
 ## Repository To-do
-- [ ] Implement secrets management for all sensitive environment variables
 - [ ] Create profiles for future machines (Desktop)
 - [ ] Migrate dotfiles from Arch machine to future desktop machine
 - [ ] Track Dashy config file in Git
-- [ ] Complete homelab2 machine
-- [ ] Find use for homelab2 machine
 
 ---
 
