@@ -80,16 +80,6 @@
   zfs
   ];
 
-  # --- NFSv4 server ---
-  services.nfs.server = {
-    enable = true;
-    # Export /tank/media as the NFSv4 root (fsid=0).
-    # Clients will mount "nixos_zfs_storage:/" and get /tank/media directly.
-    exports = ''
-      /tank/media 192.168.1.0/24(rw,fsid=0,no_subtree_check,async)
-    '';
-  };
-
   # --- ZFS: enable and tune ---
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [ "tank" ];
@@ -175,8 +165,8 @@
   networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 22 2049 ];
-  networking.firewall.allowedUDPPorts = [ 2049 ];
+  networking.firewall.allowedTCPPorts = [ 22 ];
+  networking.firewall.allowedUDPPorts = [ ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
