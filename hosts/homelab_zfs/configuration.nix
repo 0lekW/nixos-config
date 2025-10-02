@@ -137,8 +137,8 @@
 };
 
   systemd.tmpfiles.rules = [
-    "d /tank/media 0755 olek users -"
     "d /tank/shared 0775 olek users -"
+    "d /var/lib/filebrowser 0755 olek docker - -"
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -164,9 +164,57 @@
   networking.defaultGateway = "192.168.1.254";
   networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
 
+  # Samba for NFS
+  services.samba = {
+    enable = true;
+    openFirewall = true;
+    settings = {
+      global = {
+        "workgroup" = "WORKGROUP";
+        "server string" = "NixOS ZFS NAS";
+        "security" = "user";
+        "hosts allow" = "192.168.1.0/24";
+        "map to guest" = "bad user";
+      };
+      
+      "shared" = {
+        "path" = "/tank/shared";
+        "browseable" = "yes";
+        "writable" = "yes";
+        "guest ok" = "no";
+        "valid users" = "olek";
+        "force user" = "olek";
+        "create mask" = "0664";
+        "directory mask" = "0775";
+      };
+    };
+  };
+
+  # Docker
+  virtualisation.docker.enable = true;
+  virtualisation.docker.rootless = {
+    enable = true;
+    setSocketVariable = true;
+  };
+
+  virtualisation.oci-containers = {
+    backend = "docker";
+    containers = {
+      filebrowser = {
+        image = "filebrowser/filebrowser:latest";
+        ports = [ "8080:80" ];
+        volumes = [
+          "/var/lib/filebrowser:/database"
+          "/tank/shared:/srv/shared"
+        ];
+        autoStart = true;
+      };
+    };
+  };
+
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 22 ];
-  networking.firewall.allowedUDPPorts = [ ];
+  networking.firewall.allowedTCPPorts = [ 22 139 445 8080 ];
+  networking.firewall.allowedUDPPorts = [ 137 138 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
