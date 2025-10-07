@@ -67,6 +67,27 @@
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
+  # Enable NVIDIA drivers
+  services.xserver.videoDrivers = [ "nvidia" ];
+
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;  # For 32-bit applications if needed
+  };
+
+  # NVIDIA-specific settings
+  hardware.nvidia = {
+    modesetting.enable = true;
+    powerManagement.enable = false;
+    powerManagement.finegrained = false;
+    open = false;  # Proprietary driver
+    nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+  };
+
+  # Enable NVIDIA Container Toolkit for Docker
+  hardware.nvidia-container-toolkit.enable = true;
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -210,6 +231,8 @@
   	    image = "jellyfin/jellyfin:latest";
   	    environment = {
     	      TZ = "Pacific/Auckland";
+            NVIDIA_VISIBLE_DEVICES = "all";
+            NVIDIA_DRIVER_CAPABILITIES = "all";
   	    };
   	    volumes = [
     	      "/var/lib/jellyfin/config:/config"    # configuration, users, metadata
@@ -220,7 +243,7 @@
     	      # "8920:8920" # HTTPS (optional, if you add certs later)
   	    ];
   	    autoStart = true;
-        extraOptions = [ "--network=homelab" ];
+        extraOptions = [ "--network=homelab" "--device=nvidia.com/gpu=all" ];
 	  };
 
 	  filebrowser = {
