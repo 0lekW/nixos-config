@@ -343,6 +343,13 @@
       extraOptions = [ "--network=homelab" ];
     };
 
+    cjsonfmt-ui = {
+      image = "0iek/cjsonfmt-ui:latest";
+      ports = [ "8761:8761" ];
+      autoStart = true;
+      extraOptions = [ "--network=homelab" ];
+    };
+
 
 	};
   };
@@ -393,7 +400,7 @@
 
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 53 80 443 3000 6881 8000 8080 8081 8082 8090 8091 9090 9100 21115 21116 21117 21118 21119 25565 ]; # check docker for port allocations...
+  networking.firewall.allowedTCPPorts = [ 53 80 443 3000 6881 8000 8080 8081 8082 8090 8091 8761 9090 9100 21115 21116 21117 21118 21119 25565 ]; # check docker for port allocations...
   networking.firewall.allowedUDPPorts = [ 53 6881 21116 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
