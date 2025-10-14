@@ -152,7 +152,16 @@
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
+    };
+  };
+
+  # fail2ban
+  services.fail2ban.enable = true;
 
   # Static IP setup
   networking.useDHCP = false;
