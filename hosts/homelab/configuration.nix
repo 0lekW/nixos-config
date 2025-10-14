@@ -110,7 +110,16 @@
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
+    };
+  };
+
+  # fail2ban for some ssh protection
+  services.fail2ban.enable = true;
 
   # Static IP setup
   networking.useDHCP = false;
@@ -190,11 +199,11 @@
 	      "53:53/udp" # DNS UDP
 	      "8082:8082/tcp" # Web interface
 	    ];
+            environmentFiles = [ "/var/lib/pihole/pihole.env" ];
 	    environment = {
 	      TZ = "Pacific/Auckland";
-	      FTLCONF_webserver_api_password = "admin";
-        FTLCONF_webserver_api_max_sessions = "50";
-        FTLCONF_webserver_api_session_timeout = "300";
+              FTLCONF_webserver_api_max_sessions = "50";
+              FTLCONF_webserver_api_session_timeout = "300";
 	      FTLCONF_dns_listeningMode = "all";
 	      FTLCONF_webserver_port = "8082";
 	    };
@@ -376,6 +385,7 @@
     # Pi-hole
     "d /var/lib/pihole 0755 olek docker - -"
     "d /var/lib/pihole/etc-pihole 0755 olek docker - -"
+    "f /var/lib/pihole/pihole.env 0600 olek docker - -"
 
     # File browser
     "d /var/lib/filebrowser 0755 olek docker - -"
