@@ -44,6 +44,8 @@ This repository contains my personal NixOS flake-based system configurations.
 - [ ] Create profiles for future machines (Desktop)
 - [ ] Migrate dotfiles from Arch machine to future desktop machine
 - [ ] Track Dashy config file in Git
+- [ ] Clean up config files formatting and comments
+- [ ] Include photos of hardware
 
 ---
 
