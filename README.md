@@ -21,6 +21,7 @@ This repository contains my personal NixOS flake-based system configurations.
 - **TTYD** — Web UI terminal at `192.168.1.201::8091` or `https://terminal.olek.co.nz/` 
 - **Crafty Controller** — Web UI Minecraft Server hosting panel at `https://mc.olek.co.nz` or `http://<homelab-ip>:8000`
 - **[cjsonfmt-ui](https://github.com/0lekW/cjsonfmt-ui)** - Web UI interface for [cjsonfmt](https://github.com/0lekW/cjsonfmt) at `https://json.olek.co.nz` or `http://<homelab-ip>::8761`
+- **[oleks-closet](https://github.com/0lekW/oleks-closet)** - Web UI wardrobe viewer and outfit designer at `https://closet.olek.co.nz` or `http://<homelab-ip>::8762`
 
 **To-do (homelab):**
 - [ ] Remote access to services using Wireguard
