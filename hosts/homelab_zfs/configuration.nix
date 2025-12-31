@@ -72,6 +72,7 @@
   vim
   git
   lm_sensors
+  kitty.terminfo
   perccli # for storage managment
   pciutils
   lsscsi

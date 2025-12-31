@@ -95,6 +95,7 @@
   git
   lm_sensors
   nodejs
+  kitty.terminfo
   ];
 
   programs.nix-ld.enable = true;
