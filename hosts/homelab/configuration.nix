@@ -267,17 +267,6 @@
         extraOptions = [ "--network=homelab" ];
 	  };
 
-	  ttyd = {
-  	    image = "tsl0922/ttyd:latest";
-  	    volumes = [
-    	      "/srv:/srv" # access files in the terminal
-  	    ];
-  	    ports = [ "8091:7681" ]; # Web terminal at 8091
-  	    cmd = [ "ttyd" "-W" "bash" "-c" "cd /srv && exec bash" ];
-  	    autoStart = true;
-        extraOptions = [ "--network=homelab" ];
-	  };
-
     nodeexporter = {
       image = "prom/node-exporter:latest";
       ports = [ "9100:9100" ];
@@ -291,7 +280,7 @@
         "--path.sysfs=/host/sys"
         "--collector.hwmon"
       ];
-      extraOptions = [ "--privileged" "--network=homelab" ];
+      extraOptions = [ "--network=homelab" ];
       autoStart = true;
     };
 
@@ -304,6 +293,18 @@
       ];
       autoStart = true;
       extraOptions = [ "--network=homelab" ];
+    };
+
+    cadvisor = {
+      image = "gcr.io/cadvisor/cadvisor:latest";
+      volumes = [
+        "/:/rootfs:ro"
+        "/var/run:/var/run:ro"
+        "/sys:/sys:ro"
+        "/var/lib/docker/:/var/lib/docker:ro"
+      ];
+      extraOptions = [ "--privileged" "--network=homelab" ];
+      autoStart = true;
     };
 
     grafana = {
@@ -431,7 +432,7 @@
 
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 53 80 443 3000 6881 8000 8080 8081 8082 8090 8091 8761 8762 9090 9100 21115 21116 21117 21118 21119 25565 ]; # check docker for port allocations...
+  networking.firewall.allowedTCPPorts = [ 53 80 443 3000 6881 8000 8080 8081 8082 8090 8761 8762 9090 9100 21115 21116 21117 21118 21119 25565 ]; # check docker for port allocations...
   networking.firewall.allowedUDPPorts = [ 53 6881 21116 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
