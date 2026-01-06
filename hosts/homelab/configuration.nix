@@ -152,11 +152,11 @@
 	backend = "docker";
 	containers = {
 
-	  dashy = {
-            image = "lissy93/dashy:latest";
+	  dashboard = {
+            image = "0iek/homelab-dashboard:latest";
 	    ports = [ "8080:8080" ];
 	    volumes = [
-	      "/var/lib/dashy/conf.yml:/app/user-data/conf.yml"
+	      "/var/lib/dashboard/index.html:/usr/share/nginx/html/index.html:ro"
 	    ];
 	    autoStart = true;
             autoRemoveOnStop = false;
@@ -390,10 +390,9 @@
     "d /var/lib/jellyfin 0755 olek docker - -"
     "d /var/lib/jellyfin/config 0755 olek docker - -"
 
-    # Dashy
-    "d /var/lib/dashy 0755 olek docker - -"
-    "f /var/lib/dashy/conf.yml 0664 olek docker - -"
-    # If we store conf.yml in /var/lib/dashy/conf.yml as per config
+    # Dashboard
+    "d /var/lib/dashboard 0755 olek docker - -"
+    "f /var/lib/dashboard/index.html 0664 olek docker - -"
     # it will exist after first start, but we still ensure directory exists
 
     # RustDesk
