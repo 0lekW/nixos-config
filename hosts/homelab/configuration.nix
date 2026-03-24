@@ -376,6 +376,37 @@
       extraOptions = [ "--network=homelab" ];
     };
 
+    ollama = {
+      image = "ollama/ollama:latest";
+      ports = [ "11434:11434" ];
+      volumes = [
+        "/var/lib/ollama:/root/.ollama"
+      ];
+      environment = {
+        NVIDIA_VISIBLE_DEVICES = "all";
+        NVIDIA_DRIVER_CAPABILITIES = "compute,utility";
+      };
+      autoStart = true;
+      extraOptions = [
+        "--network=homelab"
+        "--device=nvidia.com/gpu=all"
+      ];
+    };
+
+    open-webui = {
+      image = "ghcr.io/open-webui/open-webui:main";
+      ports = [ "3001:8080" ]; # avoid clash with grafana on 3000
+      volumes = [
+        "/var/lib/open-webui:/app/backend/data"
+      ];
+      environment = {
+        OLLAMA_BASE_URL = "http://ollama:11434";
+      };
+      dependsOn = [ "ollama" ];
+      autoStart = true;
+      extraOptions = [ "--network=homelab" ];
+    };
+
 
 	};
   };
@@ -427,11 +458,15 @@
     "d /var/lib/oleks-closet 0755 olek docker - -"
     "d /var/lib/oleks-closet/data 0755 olek docker - -"
     "d /var/lib/oleks-closet/uploads 0755 olek docker - -"
+
+    # Ollama + Open-WebUI
+    "d /var/lib/ollama 0755 olek docker - -"
+    "d /var/lib/open-webui 0755 olek docker - -"
   ];
 
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 53 80 443 3000 6881 8000 8080 8081 8082 8090 8761 8762 9090 9100 21115 21116 21117 21118 21119 25565 ]; # check docker for port allocations...
+  networking.firewall.allowedTCPPorts = [ 53 80 443 3000 3001 6881 8000 8080 8081 8082 8090 8761 8762 9090 9100 11434 21115 21116 21117 21118 21119 25565 ]; # check docker for port allocations...
   networking.firewall.allowedUDPPorts = [ 53 6881 21116 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
