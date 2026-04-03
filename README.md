@@ -21,6 +21,9 @@ This repository contains my personal NixOS flake-based system configurations.
 - **Crafty Controller** — Web UI Minecraft Server hosting panel at `https://mc.olek.co.nz` or `http://<homelab-ip>:8000`
 - **[cjsonfmt-ui](https://github.com/0lekW/cjsonfmt-ui)** - Web UI interface for [cjsonfmt](https://github.com/0lekW/cjsonfmt) at `https://json.olek.co.nz` or `http://<homelab-ip>::8761`
 - **[oleks-closet](https://github.com/0lekW/oleks-closet)** - Web UI wardrobe viewer and outfit designer at `https://closet.olek.co.nz` or `http://<homelab-ip>::8762`
+- **Ollama** — Local AI model hosting running qwen3.5 with GPU acceleration at `http://<homelab-ip>:11434`
+- **Open WebUI** — Web UI for LLMs at `https://ai.olek.co.nz` or `http://<homelab-ip>:3001`
+- **[lupin](https://github.com/0lekW/lupin)** - Ollama task scheduler and notification system at `https://lupin.olek.co.nz` or `http://<homelab-ip>::9500`
 
 **To-do (homelab):**
 - [ ] Remote access to services using Wireguard
