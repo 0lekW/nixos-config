@@ -407,6 +407,17 @@
       extraOptions = [ "--network=homelab" ];
     };
 
+    lupin = {
+      image = "0iek/lupin:latest";
+      ports = [ "9500:9500" ];
+      volumes = [
+        "/var/lib/lupin:/data"
+      ];
+      dependsOn = [ "ollama" ];
+      autoStart = true;
+      extraOptions = [ "--network=homelab" ];
+    };
+
 
 	};
   };
@@ -462,11 +473,14 @@
     # Ollama + Open-WebUI
     "d /var/lib/ollama 0755 olek docker - -"
     "d /var/lib/open-webui 0755 olek docker - -"
+
+    # Lupin
+    "d /var/lib/lupin 0755 olek docker - -"
   ];
 
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 53 80 443 3000 3001 6881 8000 8080 8081 8082 8090 8761 8762 9090 9100 11434 21115 21116 21117 21118 21119 25565 ]; # check docker for port allocations...
+  networking.firewall.allowedTCPPorts = [ 53 80 443 3000 3001 6881 8000 8080 8081 8082 8090 8761 8762 9090 9100 9500 11434 21115 21116 21117 21118 21119 25565 ]; # check docker for port allocations...
   networking.firewall.allowedUDPPorts = [ 53 6881 21116 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
