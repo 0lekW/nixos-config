@@ -413,6 +413,9 @@
       volumes = [
         "/var/lib/lupin:/data"
       ];
+      environment = {
+        TZ = "Pacific/Auckland";
+      };
       dependsOn = [ "ollama" ];
       autoStart = true;
       extraOptions = [ "--network=homelab" ];
