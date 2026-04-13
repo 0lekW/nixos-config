@@ -5,10 +5,10 @@
 { config, pkgs, ... }:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+  ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -27,7 +27,10 @@
   networking.networkmanager.enable = true;
 
   # Flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   # Set your time zone.
   time.timeZone = "Pacific/Auckland";
@@ -60,8 +63,12 @@
   users.users.olek = {
     isNormalUser = true;
     description = "Alex Wardega";
-    extraGroups = [ "networkmanager" "wheel" "docker" ];
-    packages = with pkgs; [];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "docker"
+    ];
+    packages = with pkgs; [ ];
   };
 
   # Allow unfree packages
@@ -72,7 +79,7 @@
 
   hardware.graphics = {
     enable = true;
-    enable32Bit = true;  # For 32-bit applications if needed
+    enable32Bit = true; # For 32-bit applications if needed
   };
 
   # NVIDIA-specific settings
@@ -80,7 +87,7 @@
     modesetting.enable = true;
     powerManagement.enable = false;
     powerManagement.finegrained = false;
-    open = false;  # Proprietary driver
+    open = false; # Proprietary driver
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
@@ -91,11 +98,11 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  git
-  lm_sensors
-  nodejs
-  kitty.terminfo
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    git
+    lm_sensors
+    nodejs
+    kitty.terminfo
   ];
 
   programs.nix-ld.enable = true;
@@ -124,13 +131,18 @@
 
   # Static IP setup
   networking.useDHCP = false;
-  networking.interfaces.enp4s0.ipv4.addresses = [{
-  	address = "192.168.1.200";
-	prefixLength = 24;
-  }];
+  networking.interfaces.enp4s0.ipv4.addresses = [
+    {
+      address = "192.168.1.200";
+      prefixLength = 24;
+    }
+  ];
 
   networking.defaultGateway = "192.168.1.254";
-  networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
+  networking.nameservers = [
+    "1.1.1.1"
+    "8.8.8.8"
+  ];
 
   # Create the network for docker containers
   systemd.services.create-homelab-network = {
@@ -144,285 +156,313 @@
   # Docker
   virtualisation.docker.enable = true;
   virtualisation.docker.rootless = {
-  	enable = true;
-  	setSocketVariable = true;
+    enable = true;
+    setSocketVariable = true;
   };
 
   virtualisation.oci-containers = {
-	backend = "docker";
-	containers = {
+    backend = "docker";
+    containers = {
 
-	  dashboard = {
-            image = "0iek/homelab-dashboard:latest";
-	    ports = [ "8080:8080" ];
-	    volumes = [
-	      "/var/lib/dashboard/index.html:/usr/share/nginx/html/index.html:ro"
-	    ];
-	    autoStart = true;
-            autoRemoveOnStop = false;
-            extraOptions = [ "--restart=always" "--network=homelab" ];
-   	  };
+      dashboard = {
+        image = "0iek/homelab-dashboard:latest";
+        ports = [ "8080:8080" ];
+        volumes = [
+          "/var/lib/dashboard/index.html:/usr/share/nginx/html/index.html:ro"
+        ];
+        autoStart = true;
+        autoRemoveOnStop = false;
+        extraOptions = [
+          "--restart=always"
+          "--network=homelab"
+        ];
+      };
 
-	  rustdesk-hbbs = {
-      	    image = "rustdesk/rustdesk-server:latest";
-      	    cmd = [ "hbbs" ];
-      	    volumes = [
-              "/var/lib/rustdesk:/root"
-      	    ];
-      	    ports = [
-              "21115:21115" # TCP, Rendezvous
-              "21116:21116" # TCP, Relay (not used on LAN, but required by clients)
-              "21116:21116/udp" # UDP Relay
-              "21118:21118" # TCP, API/Web console
-      	    ];
-      	    autoStart = true;
-            extraOptions = [ "--network=homelab" ];
-    	  };
-
-	  rustdesk-hbbr = {
-      	    image = "rustdesk/rustdesk-server:latest";
-      	    cmd = [ "hbbr" ];
-      	    volumes = [
-              "/var/lib/rustdesk:/root"
-      	    ];
-            ports = [
-              "21117:21117" # TCP, Relay main
-              "21119:21119" # TCP, Secondary relay
-            ];
-            autoStart = true;
-            extraOptions = [ "--network=homelab" ];
-    	  };
-
-	  pihole = {
-	    image = "pihole/pihole:latest";
-  	    ports = [
-	      "53:53/tcp" # DNS TCP
-	      "53:53/udp" # DNS UDP
-	      "8082:8082/tcp" # Web interface
-	    ];
-            environmentFiles = [ "/var/lib/pihole/pihole.env" ];
-	    environment = {
-	      TZ = "Pacific/Auckland";
-              FTLCONF_webserver_api_max_sessions = "50";
-              FTLCONF_webserver_api_session_timeout = "300";
-	      FTLCONF_dns_listeningMode = "all";
-	      FTLCONF_webserver_port = "8082";
-	    };
-	    volumes = [
-	      "/var/lib/pihole/etc-pihole:/etc/pihole"
-	    ];
-	    autoStart = true;
-      extraOptions = [ "--network=homelab" ];
-	  };
-
-	  qbittorrent = {
-  	    image = "lscr.io/linuxserver/qbittorrent:latest";
-  	    environment = {
-    	      PUID = "1000";
-    	      PGID = "1000";
-    	      TZ = "Pacific/Auckland";
-    	      WEBUI_PORT = "8081";    
-    	      TORRENTING_PORT = "6881";
-  	    };
-  	    volumes = [
-    	      "/var/lib/qbittorrent/config:/config"
-    	      "/srv/torrents:/downloads"
-  	    ];
-  	    ports = [
-    	      "8081:8081"         # Web UI
-    	      "6881:6881"         # BitTorrent TCP
-    	      "6881:6881/udp"     # BitTorrent UDP
-  	    ];
-  	    autoStart = true;
+      rustdesk-hbbs = {
+        image = "rustdesk/rustdesk-server:latest";
+        cmd = [ "hbbs" ];
+        volumes = [
+          "/var/lib/rustdesk:/root"
+        ];
+        ports = [
+          "21115:21115" # TCP, Rendezvous
+          "21116:21116" # TCP, Relay (not used on LAN, but required by clients)
+          "21116:21116/udp" # UDP Relay
+          "21118:21118" # TCP, API/Web console
+        ];
+        autoStart = true;
         extraOptions = [ "--network=homelab" ];
-	  };
+      };
 
-	  jellyfin = {
-  	    image = "jellyfin/jellyfin:latest";
-  	    environment = {
-    	      TZ = "Pacific/Auckland";
-            NVIDIA_VISIBLE_DEVICES = "all";
-            NVIDIA_DRIVER_CAPABILITIES = "all";
-  	    };
-  	    volumes = [
-    	      "/var/lib/jellyfin/config:/config"    # configuration, users, metadata
-    	      "/srv/torrents:/media/torrents"       # point Jellyfin at torrent download dir
-  	    ];
-  	    ports = [
-    	      "8096:8096"   # Web UI / API (HTTP)
-    	      # "8920:8920" # HTTPS (optional, if you add certs later)
-  	    ];
-  	    autoStart = true;
-        extraOptions = [ "--network=homelab" "--device=nvidia.com/gpu=all" ];
-	  };
-
-	  filebrowser = {
-  	    image = "filebrowser/filebrowser:latest";
-  	    volumes = [
-    	      "/var/lib/filebrowser:/database"   # filebrowser.db + settings
-    	      "/srv:/srv"                        # browse your files under /srv
-  	    ];
-  	    ports = [ "8090:80" ];               # Web UI at http://192.168.1.200:8090
-  	    autoStart = true;
+      rustdesk-hbbr = {
+        image = "rustdesk/rustdesk-server:latest";
+        cmd = [ "hbbr" ];
+        volumes = [
+          "/var/lib/rustdesk:/root"
+        ];
+        ports = [
+          "21117:21117" # TCP, Relay main
+          "21119:21119" # TCP, Secondary relay
+        ];
+        autoStart = true;
         extraOptions = [ "--network=homelab" ];
-	  };
-
-    nodeexporter = {
-      image = "prom/node-exporter:latest";
-      ports = [ "9100:9100" ];
-      volumes = [
-        "/proc:/host/proc:ro"
-        "/sys:/host/sys:ro"
-        "/sys/class/hwmon:/host/sys/class/hwmon:ro"
-      ];
-      cmd = [
-        "--path.procfs=/host/proc"
-        "--path.sysfs=/host/sys"
-        "--collector.hwmon"
-      ];
-      extraOptions = [ "--network=homelab" ];
-      autoStart = true;
-    };
-
-    prometheus = {
-      image = "prom/prometheus:latest";
-      ports = [ "9090:9090" ];
-      volumes = [
-        "/var/lib/prometheus:/prometheus"
-        "/var/lib/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
-      ];
-      autoStart = true;
-      extraOptions = [ "--network=homelab" ];
-    };
-
-    cadvisor = {
-      image = "gcr.io/cadvisor/cadvisor:latest";
-      volumes = [
-        "/:/rootfs:ro"
-        "/var/run:/var/run:ro"
-        "/sys:/sys:ro"
-        "/var/lib/docker/:/var/lib/docker:ro"
-      ];
-      extraOptions = [ "--privileged" "--network=homelab" ];
-      autoStart = true;
-    };
-
-    grafana = {
-      image = "grafana/grafana:latest";
-      ports = [ "3000:3000" ];
-      volumes = [
-        "/var/lib/grafana:/var/lib/grafana"
-      ];
-      environment = {
-        TZ = "Pacific/Auckland";
-        GF_SECURITY_ALLOW_EMBEDDING = "true";
-        GF_AUTH_ANONYMOUS_ENABLED = "true";
-        GF_AUTH_ANONYMOUS_ORG_ROLE = "Viewer";
       };
-      autoStart = true;
-      extraOptions = [ "--network=homelab" ];
-    };
 
-    nginx-proxy-manager = {
-      image = "jc21/nginx-proxy-manager:latest";
-      ports = [ 
-        "80:80"     # HTTP
-        "443:443"   # HTTPS  
-        "81:81"     # Admin interface
-      ];
-      volumes = [
-        "/var/lib/nginx-proxy-manager/data:/data"
-        "/var/lib/nginx-proxy-manager/letsencrypt:/etc/letsencrypt"
-      ];
-      autoStart = true;
-      extraOptions = [ "--network=homelab" ];
-    };
-
-    crafty-controller = {
-      image = "registry.gitlab.com/crafty-controller/crafty-4:latest";
-      ports = [ "8000:8443" "25565:25565" ]; # 8000 = web UI (local only), 25565 = Minecraft
-      volumes = [
-        "/srv/minecraft/backups:/crafty/backups"
-        "/srv/minecraft/logs:/crafty/logs" 
-        "/srv/minecraft/servers:/crafty/servers"
-        "/srv/minecraft/config:/crafty/app/config"
-      ];
-      environment = {
-        TZ = "Pacific/Auckland";
+      pihole = {
+        image = "pihole/pihole:latest";
+        ports = [
+          "53:53/tcp" # DNS TCP
+          "53:53/udp" # DNS UDP
+          "8082:8082/tcp" # Web interface
+        ];
+        environmentFiles = [ "/var/lib/pihole/pihole.env" ];
+        environment = {
+          TZ = "Pacific/Auckland";
+          FTLCONF_webserver_api_max_sessions = "50";
+          FTLCONF_webserver_api_session_timeout = "300";
+          FTLCONF_dns_listeningMode = "all";
+          FTLCONF_webserver_port = "8082";
+        };
+        volumes = [
+          "/var/lib/pihole/etc-pihole:/etc/pihole"
+        ];
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
       };
-      autoStart = true;
-      extraOptions = [ "--network=homelab" ];
-    };
 
-    cjsonfmt-ui = {
-      image = "0iek/cjsonfmt-ui:latest";
-      ports = [ "8761:8761" ];
-      autoStart = true;
-      extraOptions = [ "--network=homelab" ];
-    };
-
-    oleks-closet = {
-      image = "0iek/oleks-closet:latest";
-      ports = [ "8762:8762" ];
-      volumes = [
-        "/var/lib/oleks-closet/data:/app/data"
-        "/var/lib/oleks-closet/uploads:/app/app/static/uploads"
-      ];
-      environment = {
-        SECRET_KEY = "dev-not-important-on-lan";
-        SQLALCHEMY_DATABASE_URI = "sqlite:////app/data/closet.db";
+      qbittorrent = {
+        image = "lscr.io/linuxserver/qbittorrent:latest";
+        environment = {
+          PUID = "1000";
+          PGID = "1000";
+          TZ = "Pacific/Auckland";
+          WEBUI_PORT = "8081";
+          TORRENTING_PORT = "6881";
+        };
+        volumes = [
+          "/var/lib/qbittorrent/config:/config"
+          "/srv/torrents:/downloads"
+        ];
+        ports = [
+          "8081:8081" # Web UI
+          "6881:6881" # BitTorrent TCP
+          "6881:6881/udp" # BitTorrent UDP
+        ];
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
       };
-      autoStart = true;
-      extraOptions = [ "--network=homelab" ];
-    };
 
-    ollama = {
-      image = "ollama/ollama:latest";
-      ports = [ "11434:11434" ];
-      volumes = [
-        "/var/lib/ollama:/root/.ollama"
-      ];
-      environment = {
-        NVIDIA_VISIBLE_DEVICES = "all";
-        NVIDIA_DRIVER_CAPABILITIES = "compute,utility";
+      jellyfin = {
+        image = "jellyfin/jellyfin:latest";
+        environment = {
+          TZ = "Pacific/Auckland";
+          NVIDIA_VISIBLE_DEVICES = "all";
+          NVIDIA_DRIVER_CAPABILITIES = "all";
+        };
+        volumes = [
+          "/var/lib/jellyfin/config:/config" # configuration, users, metadata
+          "/srv/torrents:/media/torrents" # point Jellyfin at torrent download dir
+        ];
+        ports = [
+          "8096:8096" # Web UI / API (HTTP)
+          # "8920:8920" # HTTPS (optional, if you add certs later)
+        ];
+        autoStart = true;
+        extraOptions = [
+          "--network=homelab"
+          "--device=nvidia.com/gpu=all"
+        ];
       };
-      autoStart = true;
-      extraOptions = [
-        "--network=homelab"
-        "--device=nvidia.com/gpu=all"
-      ];
-    };
 
-    open-webui = {
-      image = "ghcr.io/open-webui/open-webui:main";
-      ports = [ "3001:8080" ]; # avoid clash with grafana on 3000
-      volumes = [
-        "/var/lib/open-webui:/app/backend/data"
-      ];
-      environment = {
-        OLLAMA_BASE_URL = "http://ollama:11434";
+      filebrowser = {
+        image = "filebrowser/filebrowser:latest";
+        volumes = [
+          "/var/lib/filebrowser:/database" # filebrowser.db + settings
+          "/srv:/srv" # browse your files under /srv
+        ];
+        ports = [ "8090:80" ]; # Web UI at http://192.168.1.200:8090
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
       };
-      dependsOn = [ "ollama" ];
-      autoStart = true;
-      extraOptions = [ "--network=homelab" ];
-    };
 
-    lupin = {
-      image = "0iek/lupin:latest";
-      ports = [ "9500:9500" ];
-      volumes = [
-        "/var/lib/lupin:/data"
-      ];
-      environment = {
-        TZ = "Pacific/Auckland";
+      nodeexporter = {
+        image = "prom/node-exporter:latest";
+        ports = [ "9100:9100" ];
+        volumes = [
+          "/proc:/host/proc:ro"
+          "/sys:/host/sys:ro"
+          "/sys/class/hwmon:/host/sys/class/hwmon:ro"
+        ];
+        cmd = [
+          "--path.procfs=/host/proc"
+          "--path.sysfs=/host/sys"
+          "--collector.hwmon"
+        ];
+        extraOptions = [ "--network=homelab" ];
+        autoStart = true;
       };
-      dependsOn = [ "ollama" ];
-      autoStart = true;
-      extraOptions = [ "--network=homelab" ];
+
+      prometheus = {
+        image = "prom/prometheus:latest";
+        ports = [ "9090:9090" ];
+        volumes = [
+          "/var/lib/prometheus:/prometheus"
+          "/var/lib/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+        ];
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
+      };
+
+      cadvisor = {
+        image = "gcr.io/cadvisor/cadvisor:latest";
+        volumes = [
+          "/:/rootfs:ro"
+          "/var/run:/var/run:ro"
+          "/sys:/sys:ro"
+          "/var/lib/docker/:/var/lib/docker:ro"
+        ];
+        extraOptions = [
+          "--privileged"
+          "--network=homelab"
+        ];
+        autoStart = true;
+      };
+
+      grafana = {
+        image = "grafana/grafana:latest";
+        ports = [ "3000:3000" ];
+        volumes = [
+          "/var/lib/grafana:/var/lib/grafana"
+        ];
+        environment = {
+          TZ = "Pacific/Auckland";
+          GF_SECURITY_ALLOW_EMBEDDING = "true";
+          GF_AUTH_ANONYMOUS_ENABLED = "true";
+          GF_AUTH_ANONYMOUS_ORG_ROLE = "Viewer";
+        };
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
+      };
+
+      nginx-proxy-manager = {
+        image = "jc21/nginx-proxy-manager:latest";
+        ports = [
+          "80:80" # HTTP
+          "443:443" # HTTPS
+          "81:81" # Admin interface
+        ];
+        volumes = [
+          "/var/lib/nginx-proxy-manager/data:/data"
+          "/var/lib/nginx-proxy-manager/letsencrypt:/etc/letsencrypt"
+        ];
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
+      };
+
+      crafty-controller = {
+        image = "registry.gitlab.com/crafty-controller/crafty-4:latest";
+        ports = [
+          "8000:8443"
+          "25565:25565"
+        ]; # 8000 = web UI (local only), 25565 = Minecraft
+        volumes = [
+          "/srv/minecraft/backups:/crafty/backups"
+          "/srv/minecraft/logs:/crafty/logs"
+          "/srv/minecraft/servers:/crafty/servers"
+          "/srv/minecraft/config:/crafty/app/config"
+        ];
+        environment = {
+          TZ = "Pacific/Auckland";
+        };
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
+      };
+
+      cjsonfmt-ui = {
+        image = "0iek/cjsonfmt-ui:latest";
+        ports = [ "8761:8761" ];
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
+      };
+
+      oleks-closet = {
+        image = "0iek/oleks-closet:latest";
+        ports = [ "8762:8762" ];
+        volumes = [
+          "/var/lib/oleks-closet/data:/app/data"
+          "/var/lib/oleks-closet/uploads:/app/app/static/uploads"
+        ];
+        environment = {
+          SECRET_KEY = "dev-not-important-on-lan";
+          SQLALCHEMY_DATABASE_URI = "sqlite:////app/data/closet.db";
+        };
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
+      };
+
+      ollama = {
+        image = "ollama/ollama:latest";
+        ports = [ "11434:11434" ];
+        volumes = [
+          "/var/lib/ollama:/root/.ollama"
+        ];
+        environment = {
+          NVIDIA_VISIBLE_DEVICES = "all";
+          NVIDIA_DRIVER_CAPABILITIES = "compute,utility";
+        };
+        autoStart = true;
+        extraOptions = [
+          "--network=homelab"
+          "--device=nvidia.com/gpu=all"
+        ];
+      };
+
+      open-webui = {
+        image = "ghcr.io/open-webui/open-webui:main";
+        ports = [ "3001:8080" ]; # avoid clash with grafana on 3000
+        volumes = [
+          "/var/lib/open-webui:/app/backend/data"
+        ];
+        environment = {
+          OLLAMA_BASE_URL = "http://ollama:11434";
+        };
+        dependsOn = [ "ollama" ];
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
+      };
+
+      lupin = {
+        image = "0iek/lupin:latest";
+        ports = [ "9500:9500" ];
+        volumes = [
+          "/var/lib/lupin:/data"
+        ];
+        environment = {
+          TZ = "Pacific/Auckland";
+        };
+        dependsOn = [ "ollama" ];
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
+      };
+
+      vikunja = {
+        image = "vikunja/vikunja:latest";
+        ports = [ "8763:3456" ];
+        volumes = [
+          "/var/lib/vikunja:/app/vikunja/files"
+        ];
+        environment = {
+          TZ = "Pacific/Auckland";
+          VIKUNJA_DATABASE_TYPE = "sqlite";
+          VIKUNJA_DATABASE_PATH = "/app/vikunja/files/vikunja.db";
+          VIKUNJA_SERVICE_PUBLICURL = "http://192.168.1.200:8763";
+        };
+        environmentFiles = [ "/var/lib/vikunja/vikunja.env" ];
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
+      };
+
     };
-
-
-	};
   };
 
   systemd.tmpfiles.rules = [
@@ -463,7 +503,7 @@
 
     # Minecraft server
     "d /srv/minecraft 0755 olek docker - -"
-    "d /srv/minecraft/backups 0755 olek docker - -" 
+    "d /srv/minecraft/backups 0755 olek docker - -"
     "d /srv/minecraft/logs 0755 olek docker - -"
     "d /srv/minecraft/servers 0755 olek docker - -"
     "d /srv/minecraft/config 0755 olek docker - -"
@@ -479,12 +519,44 @@
 
     # Lupin
     "d /var/lib/lupin 0755 olek docker - -"
+
+    # Vikunja
+    "d /var/lib/vikunja 0755 olek docker - -"
+    "f /var/lib/vikunja/vikunja.env 0600 olek docker - -"
   ];
 
-
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 53 80 443 3000 3001 6881 8000 8080 8081 8082 8090 8761 8762 9090 9100 9500 11434 21115 21116 21117 21118 21119 25565 ]; # check docker for port allocations...
-  networking.firewall.allowedUDPPorts = [ 53 6881 21116 ];
+  networking.firewall.allowedTCPPorts = [
+    53
+    80
+    443
+    3000
+    3001
+    6881
+    8000
+    8080
+    8081
+    8082
+    8090
+    8761
+    8762
+    8763
+    9090
+    9100
+    9500
+    11434
+    21115
+    21116
+    21117
+    21118
+    21119
+    25565
+  ]; # check docker for port allocations...
+  networking.firewall.allowedUDPPorts = [
+    53
+    6881
+    21116
+  ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 

@@ -9,7 +9,7 @@ This repository contains my personal NixOS flake-based system configurations.
 **Purpose:** Dashboard and main services.
 
 **Currently configured:**
-- **Dashy** — Web dashboard at `http://home.olek.co.nz` or `http://<homelab-ip>:8080`
+- **Custom Dashboard** — Web dashboard at `http://home.olek.co.nz` or `http://<homelab-ip>:8080`
 - **Pi-hole** — DNS-based ad blocker at `http://pihole.olek.co.nz` or `http://<homelab-ip>:8082/admin`
 - **RustDesk Server** — Self-hosted remote access (LAN only for now)
 - **qBittorrent** — Torrent management at `http://torrent.olek.co.nz` or `http://<homelab-ip>:8081`
@@ -24,11 +24,12 @@ This repository contains my personal NixOS flake-based system configurations.
 - **Ollama** — Local AI model hosting running qwen3.5 with GPU acceleration at `http://<homelab-ip>:11434`
 - **Open WebUI** — Web UI for LLMs at `https://ai.olek.co.nz` or `http://<homelab-ip>:3001`
 - **[lupin](https://github.com/0lekW/lupin)** - Ollama task scheduler and notification system at `https://lupin.olek.co.nz` or `http://<homelab-ip>::9500`
+- **Vikunja** - Task manager at `https://tasks.olek.co.nz` or `http://<homelab-ip>:8963`
 
 **To-do (homelab):**
 - [ ] Remote access to services using Wireguard
 - [ ] Add HDDs to machine
-- [ ] Self hosted LLM
+- [ ] Add Gemma4 in ollama
 
 ### homelab_zfs
 **Hardware:** Intel(R) Xeon(R) E E-2414, 32GB DDR5 RAM, 4x460GB SSD.
@@ -45,10 +46,8 @@ This repository contains my personal NixOS flake-based system configurations.
 
 ## Repository To-do
 - [ ] Create profiles for future machines (Desktop)
-- [ ] Migrate dotfiles from Arch machine to future desktop machine
-- [ ] Track Dashy config file in Git
 - [ ] Clean up config files formatting and comments
-- [ ] Include photos of hardware
+- [ ] Include photos of hardware and dashboard
 
 ---
 
