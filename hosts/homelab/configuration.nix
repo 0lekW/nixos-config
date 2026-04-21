@@ -164,18 +164,32 @@
     backend = "docker";
     containers = {
 
-      dashboard = {
-        image = "0iek/homelab-dashboard:latest";
+      # dashboard = {
+      #   image = "0iek/homelab-dashboard:latest";
+      #   ports = [ "8080:8080" ];
+      #   volumes = [
+      #     "/var/lib/dashboard/index.html:/usr/share/nginx/html/index.html:ro"
+      #   ];
+      #   autoStart = true;
+      #   autoRemoveOnStop = false;
+      #   extraOptions = [
+      #     "--restart=always"
+      #     "--network=homelab"
+      #   ];
+      # };
+
+      glance = {
+        image = "glanceapp/glance:latest";
         ports = [ "8080:8080" ];
         volumes = [
-          "/var/lib/dashboard/index.html:/usr/share/nginx/html/index.html:ro"
+          "/var/lib/glance/config:/app/config"
+          "/var/lib/glance/assets:/app/assets"
         ];
+        environment = {
+          TZ = "Pacific/Auckland";
+        };
         autoStart = true;
-        autoRemoveOnStop = false;
-        extraOptions = [
-          "--restart=always"
-          "--network=homelab"
-        ];
+        extraOptions = [ "--network=homelab" ];
       };
 
       rustdesk-hbbs = {
@@ -476,9 +490,13 @@
     "d /var/lib/jellyfin/config 0755 olek docker - -"
 
     # Dashboard
-    "d /var/lib/dashboard 0755 olek docker - -"
-    "f /var/lib/dashboard/index.html 0664 olek docker - -"
-    # it will exist after first start, but we still ensure directory exists
+    # "d /var/lib/dashboard 0755 olek docker - -"
+    # "f /var/lib/dashboard/index.html 0664 olek docker - -"
+
+    # Glance
+    "d /var/lib/glance 0755 olek docker - -"
+    "d /var/lib/glance/config 0755 olek docker - -"
+    "d /var/lib/glance/assets 0755 olek docker - -"
 
     # RustDesk
     "d /var/lib/rustdesk 0755 olek docker - -"
