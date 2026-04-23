@@ -182,8 +182,8 @@
         image = "glanceapp/glance:latest";
         ports = [ "8080:8080" ];
         volumes = [
-          "/var/lib/glance/config:/app/config"
-          "/var/lib/glance/assets:/app/assets"
+          "/home/olek/nixos-config/hosts/homelab/glance/config:/app/config"
+          "/home/olek/nixos-config/hosts/homelab/glance/assets:/app/assets"
         ];
         environment = {
           TZ = "Pacific/Auckland";
@@ -488,15 +488,6 @@
     # Jellyfin
     "d /var/lib/jellyfin 0755 olek docker - -"
     "d /var/lib/jellyfin/config 0755 olek docker - -"
-
-    # Dashboard
-    # "d /var/lib/dashboard 0755 olek docker - -"
-    # "f /var/lib/dashboard/index.html 0664 olek docker - -"
-
-    # Glance
-    "d /var/lib/glance 0755 olek docker - -"
-    "d /var/lib/glance/config 0755 olek docker - -"
-    "d /var/lib/glance/assets 0755 olek docker - -"
 
     # RustDesk
     "d /var/lib/rustdesk 0755 olek docker - -"

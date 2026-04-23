@@ -1,0 +1,228 @@
+- name: Sports
+  columns:
+    - size: full
+      widgets:
+        - type: custom-api
+          title: Football Today
+          cache: 60s
+          url: https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard
+          template: |
+            {{- $events := .JSON.Array "events" -}}
+            {{- $lastId := "" -}}
+            {{- $hasGames := false -}}
+            {{ range $events }}
+              {{- $lid := trimPrefix "l:" (findMatch "l:[0-9]+" (.String "uid")) -}}
+              {{- $name := "" -}}
+              {{- if eq $lid "700" -}}{{- $name = "Premier League" -}}
+              {{- else if eq $lid "740" -}}{{- $name = "La Liga" -}}
+              {{- else if eq $lid "730" -}}{{- $name = "Serie A" -}}
+              {{- else if eq $lid "710" -}}{{- $name = "Ligue 1" -}}
+              {{- else if eq $lid "720" -}}{{- $name = "Bundesliga" -}}
+              {{- else if eq $lid "775" -}}{{- $name = "Champions League" -}}
+              {{- else if eq $lid "3918" -}}{{- $name = "FA Cup" -}}
+              {{- else if eq $lid "3920" -}}{{- $name = "Carabao Cup" -}}
+              {{- else if eq $lid "606" -}}{{- $name = "World Cup" -}}
+              {{- else if eq $lid "3922" -}}{{- $name = "Int'l Friendly" -}}
+              {{- else if eq $lid "781" -}}{{- $name = "UEFA Euro" -}}
+              {{- else if eq $lid "2395" -}}{{- $name = "Nations League" -}}
+              {{- end -}}
+              {{- if ne $name "" -}}
+                {{- $hasGames = true -}}
+                {{- if ne $lid $lastId -}}
+                  {{- $lastId = $lid -}}
+                  <p style="font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--glance-accent-color);margin:10px 0 2px;padding-top:6px;border-top:1px solid var(--glance-divider);">{{- $name -}}</p>
+                {{- end -}}
+                {{- $comps := .Array "competitions" -}}
+                {{- if gt (len $comps) 0 -}}
+                  {{- $comp := index $comps 0 -}}
+                  {{- $competitors := $comp.Array "competitors" -}}
+                  {{- if ge (len $competitors) 2 -}}
+                    {{- $c0 := index $competitors 0 -}}
+                    {{- $c1 := index $competitors 1 -}}
+                    {{- $state := $comp.String "status.type.state" -}}
+                    <div style="display:flex;align-items:center;padding:3px 0;font-size:0.83em;gap:4px;">
+                      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{- $c0.String "team.shortDisplayName" -}}</span>
+                      {{- if eq $state "pre" -}}
+                        {{- $dateStr := $comp.String "date" -}}
+                        {{- if $dateStr -}}
+                          {{- $t := ($dateStr | parseTime "2006-01-02T15:04Z") -}}
+                          <span style="white-space:nowrap;font-weight:600;min-width:55px;text-align:center;color:var(--glance-muted-text);">{{- ($t.In now.Location).Format "15:04" -}}</span>
+                        {{- end -}}
+                      {{- else if eq $state "in" -}}
+                        <span style="white-space:nowrap;font-weight:600;min-width:55px;text-align:center;color:#00c853;">{{- $c0.String "score" -}}-{{- $c1.String "score" -}}<span style="font-size:0.8em;"> {{- $comp.String "status.displayClock" -}}</span></span>
+                      {{- else -}}
+                        <span style="white-space:nowrap;font-weight:600;min-width:55px;text-align:center;color:var(--glance-muted-text);">{{- $c0.String "score" -}}-{{- $c1.String "score" -}} FT</span>
+                      {{- end -}}
+                      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">{{- $c1.String "team.shortDisplayName" -}}</span>
+                    </div>
+                  {{- end -}}
+                {{- end -}}
+              {{- end -}}
+            {{ end }}
+            {{- if not $hasGames -}}
+              <p style="color:var(--glance-muted-text);padding:12px 0;">No fixtures today.</p>
+            {{- end -}}
+
+        - type: custom-api
+          title: NBA Today
+          url: https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard
+          cache: 15s
+          template: |
+            {{ $events := .JSON.Array "events" }}
+            {{ if eq (len $events) 0 }}
+              <p style="color:var(--glance-muted-text);padding:12px 0;">No games today.</p>
+            {{ else }}
+              {{ $wid := printf "nba-%d" now.UnixNano }}
+              <div id="{{ $wid }}" style="position:relative;padding-bottom:{{ if gt (len $events) 6 }}25px{{ else }}0px{{ end }};">
+                <input type="checkbox" id="{{ $wid }}-cb" style="display:none"/>
+                <ul class="visible" style="list-style:none;padding:0;margin:0;">
+                  {{ $count := 0 }}
+                  {{ range $events }}
+                    {{ $phase := .String "competitions.0.status.type.state" }}
+                    {{ if and (lt $count 6) (eq $phase "in") }}
+                      {{ template "nba-game" . }}
+                      {{ $count = add $count 1 }}
+                    {{ end }}
+                  {{ end }}
+                  {{ range $events }}
+                    {{ $phase := .String "competitions.0.status.type.state" }}
+                    {{ if and (lt $count 6) (eq $phase "pre") }}
+                      {{ template "nba-game" . }}
+                      {{ $count = add $count 1 }}
+                    {{ end }}
+                  {{ end }}
+                  {{ range $events }}
+                    {{ $phase := .String "competitions.0.status.type.state" }}
+                    {{ if and (lt $count 6) (and (ne $phase "in") (ne $phase "pre")) }}
+                      {{ template "nba-game" . }}
+                      {{ $count = add $count 1 }}
+                    {{ end }}
+                  {{ end }}
+                </ul>
+                <ul class="all" style="list-style:none;padding:0;margin:0;display:none">
+                  {{ range $events }}
+                    {{ if eq (.String "competitions.0.status.type.state") "in" }}
+                      {{ template "nba-game" . }}
+                    {{ end }}
+                  {{ end }}
+                  {{ range $events }}
+                    {{ if eq (.String "competitions.0.status.type.state") "pre" }}
+                      {{ template "nba-game" . }}
+                    {{ end }}
+                  {{ end }}
+                  {{ range $events }}
+                    {{ $phase := .String "competitions.0.status.type.state" }}
+                    {{ if and (ne $phase "in") (ne $phase "pre") }}
+                      {{ template "nba-game" . }}
+                    {{ end }}
+                  {{ end }}
+                </ul>
+                {{ if gt (len $events) 6 }}
+                  <label for="{{ $wid }}-cb" style="position:absolute;bottom:0;right:0;cursor:pointer;color:var(--glance-accent-color);padding:5px;">
+                    <span style="display:inline-block;transition:transform .2s;font-size:20px;">&#9662;</span>
+                  </label>
+                {{ end }}
+                <style>
+                  #{{ $wid }} .nba-row:last-child { margin-bottom:0; }
+                  #{{ $wid }}-cb:not(:checked) ~ .all { display:none!important }
+                  #{{ $wid }}-cb:checked ~ .visible { display:none!important }
+                  #{{ $wid }}-cb:checked ~ .all { display:block!important }
+                  #{{ $wid }}-cb:checked ~ label span { transform:rotate(180deg)!important }
+                </style>
+              </div>
+            {{ end }}
+
+            {{ define "nba-game" }}
+              {{ $state := .String "competitions.0.status.type.name" }}
+              {{ $home := index (.Array "competitions.0.competitors") 0 }}
+              {{ $away := index (.Array "competitions.0.competitors") 1 }}
+              {{ $awayRecords := $away.Array "records" }}
+              {{ $homeRecords := $home.Array "records" }}
+              {{ $awayRec := "" }}
+              {{ if gt (len $awayRecords) 0 }}{{ $awayRec = (index $awayRecords 0).String "summary" }}{{ end }}
+              {{ $homeRec := "" }}
+              {{ if gt (len $homeRecords) 0 }}{{ $homeRec = (index $homeRecords 0).String "summary" }}{{ end }}
+              {{ $awayLogo := $away.String "team.logo" }}
+              {{ $homeLogo := $home.String "team.logo" }}
+              {{ $fallbackLogo := "https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nba.png" }}
+              {{ $statusText := .String "competitions.0.status.type.shortDetail" }}
+              {{ $awayAbbr := $away.String "team.abbreviation" }}
+              {{ if or (eq (len $awayAbbr) 0) (gt (len $awayAbbr) 3) }}
+                {{ $awayAbbr = printf "%.3s" ($away.String "team.displayName") }}
+              {{ end }}
+              {{ $homeAbbr := $home.String "team.abbreviation" }}
+              {{ if or (eq (len $homeAbbr) 0) (gt (len $homeAbbr) 3) }}
+                {{ $homeAbbr = printf "%.3s" ($home.String "team.displayName") }}
+              {{ end }}
+              <li class="nba-row" style="display:flex;flex-direction:column;gap:2px;padding:5px 0;border-bottom:1px solid var(--glance-divider);"
+                {{ if ne $state "STATUS_SCHEDULED" }}
+                  title="{{ $awayAbbr }} Box:{{ range $j,$ls := $away.Array "linescores" }}{{ if eq $j 0 }} Q1: {{ else if eq $j 1 }} Q2: {{ else if eq $j 2 }} Q3: {{ else if eq $j 3 }} Q4: {{ else }} OT: {{ end }}{{ $ls.String "value" }}{{ end }}&#10;{{ $homeAbbr }} Box:{{ range $j,$ls := $home.Array "linescores" }}{{ if eq $j 0 }} Q1: {{ else if eq $j 1 }} Q2: {{ else if eq $j 2 }} Q3: {{ else if eq $j 3 }} Q4: {{ else }} OT: {{ end }}{{ $ls.String "value" }}{{ end }}"
+                {{ end }}>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;">
+                  <div style="display:flex;align-items:flex-start;gap:6px;min-width:0;">
+                    {{ if $awayLogo }}
+                      <img src="{{ $awayLogo }}" alt="{{ $awayAbbr }}" style="width:34px;height:34px;border-radius:50%;flex-shrink:0;"/>
+                    {{ else }}
+                      <img src="{{ $fallbackLogo }}" alt="{{ $awayAbbr }}" style="width:34px;height:34px;border-radius:50%;flex-shrink:0;"/>
+                    {{ end }}
+                    <div style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+                      <span style="font-weight:700;letter-spacing:0.08em;white-space:nowrap;text-transform:uppercase;">{{ $awayAbbr }}</span>
+                      {{ if $awayRec }}<span style="font-size:0.7em;color:var(--glance-muted-text);white-space:nowrap;">({{ $awayRec }})</span>{{ end }}
+                    </div>
+                  </div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:10px;white-space:nowrap;">
+                      {{ if ne $state "STATUS_SCHEDULED" }}
+                        <span style="font-size:1em;font-weight:700;color:var(--glance-heading-text);">{{ $away.String "score" }}</span>
+                      {{ end }}
+                      <span style="font-size:0.75em;font-weight:500;">
+                        {{ if eq $state "STATUS_IN_PROGRESS" }}
+                          {{ $period := .String "competitions.0.status.period" }}
+                          {{ if eq $period "1" }}1st{{ else if eq $period "2" }}2nd{{ else if eq $period "3" }}3rd{{ else if eq $period "4" }}4th{{ else }}OT{{ end }}
+                          {{ .String "competitions.0.status.displayClock" }}
+                        {{ else if eq $state "STATUS_SCHEDULED" }}
+                          {{ $tipStr := .String "competitions.0.date" }}
+                          {{ if $tipStr }}
+                            {{ $tip := ($tipStr | parseTime "2006-01-02T15:04Z") }}
+                            {{ $local := $tip.In now.Location }}
+                            {{ $local.Format "15:04" }}
+                          {{ else }}
+                            {{ $statusText }}
+                          {{ end }}
+                        {{ else }}
+                          {{ $statusText }}
+                        {{ end }}
+                      </span>
+                      {{ if ne $state "STATUS_SCHEDULED" }}
+                        <span style="font-size:1em;font-weight:700;color:var(--glance-heading-text);">{{ $home.String "score" }}</span>
+                      {{ end }}
+                    </div>
+                    {{ if .Exists "competitions.0.series" }}
+                      <div style="font-size:0.7em;color:var(--glance-muted-text);white-space:nowrap;">{{ .String "competitions.0.series.summary" }}</div>
+                    {{ end }}
+                  </div>
+                  <div style="display:flex;align-items:flex-start;gap:6px;justify-content:flex-end;min-width:0;">
+                    <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end;min-width:0;">
+                      <span style="font-weight:700;letter-spacing:0.08em;white-space:nowrap;text-transform:uppercase;">{{ $homeAbbr }}</span>
+                      {{ if $homeRec }}<span style="font-size:0.7em;color:var(--glance-muted-text);white-space:nowrap;">({{ $homeRec }})</span>{{ end }}
+                    </div>
+                    {{ if $homeLogo }}
+                      <img src="{{ $homeLogo }}" alt="{{ $homeAbbr }}" style="width:34px;height:34px;border-radius:50%;flex-shrink:0;"/>
+                    {{ else }}
+                      <img src="{{ $fallbackLogo }}" alt="{{ $homeAbbr }}" style="width:34px;height:34px;border-radius:50%;flex-shrink:0;"/>
+                    {{ end }}
+                  </div>
+                </div>
+              </li>
+            {{ end }}
+
+    - size: full
+      widgets:
+        - type: rss
+          title: Sports News
+          limit: 20
+          collapse-after: 7
+          cache: 30m
+          feeds:
+            - url: https://feeds.bbci.co.uk/sport/rss.xml
+              title: BBC Sport

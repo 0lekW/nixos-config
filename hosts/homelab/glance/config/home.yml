@@ -1,0 +1,115 @@
+- name: Home
+  # Optionally, if you only have a single page you can hide the desktop navigation for a cleaner look
+  # hide-desktop-navigation: true
+  columns:
+    - size: small
+      widgets:
+        - type: calendar
+          first-day-of-week: monday
+
+        - type: bookmarks
+          groups:
+            - title: Media
+              links:
+                - title: Jellyfin
+                  url: http://jellyfin.olek.co.nz
+                  icon: si:jellyfin
+                - title: qBittorrent
+                  url: http://torrent.olek.co.nz
+                  icon: si:qbittorrent
+                - title: FileBrowser
+                  url: https://files.olek.co.nz
+                  icon: mdi:folder-cog
+            - title: Apps
+              links:
+                - title: Vikunja
+                  url: https://tasks.olek.co.nz
+                  icon: mdi:checkbox-marked-circle
+                - title: Open WebUI
+                  url: https://ai.olek.co.nz
+                  icon: mdi:robot
+                - title: Lupin
+                  url: https://lupin.olek.co.nz
+                  icon: mdi:bell-alert
+                - title: Oleks Closet
+                  url: https://closet.olek.co.nz
+                  icon: https://raw.githubusercontent.com/0lekW/oleks-closet/main/app/static/images/favicon.png
+                - title: JSON Formatter
+                  url: https://json.olek.co.nz
+                  icon: https://raw.githubusercontent.com/0lekW/0lekW.github.io/main/images/projects/cjsonfmt-ui-logo.png
+            - title: Infra
+              links:
+                - title: Pi-hole
+                  url: http://pihole.olek.co.nz/admin
+                  icon: si:pihole
+                - title: Grafana
+                  url: http://graphs.olek.co.nz
+                  icon: si:grafana
+                - title: Prometheus
+                  url: http://prometheus.olek.co.nz
+                  icon: si:prometheus
+                - title: Nginx Proxy Manager
+                  url: http://nginx.olek.co.nz
+                  icon: si:nginx
+                - title: Minecraft Panel
+                  url: https://mc.olek.co.nz
+                  icon: si:minecraft
+
+    - size: full
+      widgets:
+        - type: group
+          widgets:
+            - type: hacker-news
+            - type: rss
+              title: World News
+              limit: 15
+              collapse-after: 5
+              cache: 30m
+              feeds:
+                - url: http://feeds.bbci.co.uk/news/world/rss.xml
+                  title: BBC World
+
+        - type: group
+          widgets:
+            - type: iframe
+              title: General Monitoring
+              source: https://graphs.olek.co.nz/d/a0519aa9-6513-44e4-9cf8-ccfbadd56388/dash1?orgId=1&kiosk=1&theme=dark
+              height: 550
+            - type: iframe
+              title: Docker Monitoring
+              source: https://graphs.olek.co.nz/d/7ea7d072-ee14-4401-a784-bd606b8e01dd/dash2?orgId=1&kiosk=1&theme=dark
+              height: 550
+
+    - size: small
+      widgets:
+        - type: weather
+          location: Auckland, New Zealand
+          units: metric
+          hour-format: 24h
+          # Optionally hide the location from being displayed in the widget
+          # hide-location: true
+
+        - type: markets
+          markets:
+            - symbol: SPY
+              name: S&P 500
+            - symbol: NBIS
+              name: Nebius
+            - symbol: LMT
+              name: Lockheed Martin
+            - symbol: GOOG
+              name: Google
+            - symbol: AMD
+              name: AMD
+            - symbol: RKLB
+              name: Rocket Lab
+            - symbol: APO
+              name: Apollo Global
+            - symbol: BA
+              name: Boeing
+            - symbol: QQQI
+              name: QQQI
+            - symbol: IREN
+              name: Iris Energy
+            - symbol: APLD
+              name: Applied Digital
