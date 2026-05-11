@@ -103,6 +103,7 @@
     lm_sensors
     nodejs
     kitty.terminfo
+    unstable.claude-code
   ];
 
   programs.nix-ld.enable = true;
