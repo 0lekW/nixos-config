@@ -495,6 +495,16 @@
         extraOptions = [ "--network=homelab" ];
       };
 
+      # Cloudflare Tunnel — exposes ONLY odds.olek.co.nz publicly (outbound only,
+      # no ports opened). Token lives in the env file below, never in git.
+      cloudflared = {
+        image = "cloudflare/cloudflared:latest";
+        cmd = [ "tunnel" "--no-autoupdate" "run" ];
+        environmentFiles = [ "/var/lib/cloudflared/cloudflared.env" ]; # TUNNEL_TOKEN=...
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
+      };
+
     };
   };
 
@@ -555,6 +565,10 @@
     # WC sweepstake odds service
     "d /var/lib/wc-odds 0755 olek docker - -"
     "f /var/lib/wc-odds/odds.env 0600 olek docker - -"
+
+    # Cloudflare Tunnel
+    "d /var/lib/cloudflared 0755 olek docker - -"
+    "f /var/lib/cloudflared/cloudflared.env 0600 olek docker - -"
   ];
 
   # Open ports in the firewall.
