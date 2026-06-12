@@ -15,12 +15,37 @@
 //   ALLOW_ORIGIN        (*)     CORS origin to allow
 
 import http from 'node:http';
+import fs from 'node:fs';
 
 const KEY          = process.env.ODDS_API_KEY;
 const PORT         = Number(process.env.PORT || 8764);
 const DELAY_H      = Number(process.env.FINISH_DELAY_HOURS || 2);
 const POLL_MIN     = Number(process.env.POLL_MINUTES || 20);
 const ALLOW_ORIGIN = process.env.ALLOW_ORIGIN || '*';
+
+// odds history — append a snapshot whenever odds change, persisted to a writable
+// volume so the trend survives restarts. The page reconstructs each person's
+// title-chance series from these raw team-odds snapshots.
+const HISTORY_FILE = process.env.HISTORY_FILE || '/data/odds-history.json';
+const HISTORY_MAX  = Number(process.env.HISTORY_MAX || 400);
+let oddsHistory = [];
+try {
+    const parsed = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8'));
+    if (Array.isArray(parsed)) oddsHistory = parsed;
+} catch (e) { /* no history yet */ }
+
+function recordOddsSnapshot(when, teams) {
+    try {
+        const last = oddsHistory[oddsHistory.length - 1];
+        if (last && JSON.stringify(last.teams) === JSON.stringify(teams)) return; // unchanged
+        oddsHistory.push({ t: when, teams });
+        if (oddsHistory.length > HISTORY_MAX) oddsHistory = oddsHistory.slice(-HISTORY_MAX);
+        fs.writeFileSync(HISTORY_FILE, JSON.stringify(oddsHistory));
+        console.log(`[wc-odds] odds snapshot recorded — ${oddsHistory.length} points`);
+    } catch (e) {
+        console.error('[wc-odds] odds history write failed:', e.message);
+    }
+}
 
 const WC_LEAGUE = 4429;   // TheSportsDB FIFA World Cup
 const SDB_PAST  = `https://www.thesportsdb.com/api/v1/json/3/eventspastleague.php?id=${WC_LEAGUE}`;
@@ -98,6 +123,7 @@ async function refreshOdds(reason) {
             teams,
         };
         console.log(`[wc-odds] odds refreshed (${reason}) — ${matched}/${TEAMS.length} teams @ ${cache.updated}`);
+        recordOddsSnapshot(cache.updated, teams);
     } catch (e) {
         console.error('[wc-odds] refresh failed:', e.message);
     }
@@ -281,6 +307,10 @@ http.createServer((req, res) => {
     if (req.url.startsWith('/odds.json')) {
         res.writeHead(200, { 'Content-Type': 'application/json', ...corsHeaders });
         return res.end(JSON.stringify(cache));
+    }
+    if (req.url.startsWith('/odds-history.json')) {
+        res.writeHead(200, { 'Content-Type': 'application/json', ...corsHeaders });
+        return res.end(JSON.stringify({ updated: cache.updated, count: oddsHistory.length, points: oddsHistory }));
     }
     if (req.url.startsWith('/highlights.json')) {
         res.writeHead(200, { 'Content-Type': 'application/json', ...corsHeaders });

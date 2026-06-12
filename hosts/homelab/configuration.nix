@@ -482,6 +482,7 @@
         ports = [ "8764:8764" ];
         volumes = [
           "/home/olek/nixos-config/hosts/homelab/wc-odds:/app:ro"
+          "/var/lib/wc-odds:/data"   # writable: persists odds-history.json across restarts
         ];
         environmentFiles = [ "/var/lib/wc-odds/odds.env" ]; # holds ODDS_API_KEY=...
         environment = {
