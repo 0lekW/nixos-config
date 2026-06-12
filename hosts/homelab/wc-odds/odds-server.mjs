@@ -213,6 +213,67 @@ async function refreshHighlights(reason) {
     }
 }
 
+// ============================================================
+//  FIXTURES — the full match list (status, score, live minute) from FotMob,
+//  served at /fixtures.json. This replaces TheSportsDB as the fixtures source
+//  for the site. Polls fast while a match is live/imminent, slow when idle.
+//  Shapes each match with str*/int* field names so the page's existing match
+//  renderers consume it unchanged; `state`/`liveLabel` add live support.
+// ============================================================
+const FIX_LIVE_SEC = Number(process.env.FIX_LIVE_SECONDS || 45);
+const FIX_IDLE_SEC = Number(process.env.FIX_IDLE_SECONDS || 300);
+
+let fixturesCache = { updated: null, source: 'FotMob', count: 0, matches: [] };
+
+function mapFixture(m) {
+    const s = m.status || {};
+    const [hs, as] = hlParseScore(s.scoreStr);
+    let state, label;
+    if (s.cancelled)     { state = 'cancelled'; label = s.reason?.short || 'Cancelled'; }
+    else if (s.finished) { state = 'finished';  label = s.reason?.short || 'FT'; }
+    else if (s.started)  { state = 'live';      label = s.liveTime?.short || s.reason?.short || 'LIVE'; }
+    else                 { state = 'upcoming';  label = 'NS'; }
+    const kickoff = hlToISO(s.utcTime);
+    return {
+        idEvent: String(m.id),
+        strHomeTeam: m.home?.name ?? null,
+        strAwayTeam: m.away?.name ?? null,
+        intHomeScore: hs, intAwayScore: as,
+        strTimestamp: kickoff,
+        dateEvent: kickoff ? kickoff.slice(0, 10) : null,
+        strStatus: label,
+        intRound: m.roundName ?? m.round ?? null,
+        strGroup: m.group ?? null,
+        state,
+        liveLabel: label,
+    };
+}
+
+async function refreshFixtures(reason) {
+    try {
+        const nd = await fotmobNextData(FOTMOB_LEAGUE_URL);
+        const all = nd?.props?.pageProps?.fixtures?.allMatches || [];
+        const matches = all.map(mapFixture);
+        fixturesCache = { updated: new Date().toISOString(), source: 'FotMob', count: matches.length, matches };
+        const liveN = matches.filter(m => m.state === 'live').length;
+        console.log(`[wc-odds] fixtures refreshed (${reason}) — ${matches.length} matches, ${liveN} live`);
+        const now = Date.now();
+        return matches.some(m => m.state === 'live' ||
+            (m.state === 'upcoming' && m.strTimestamp &&
+             Date.parse(m.strTimestamp) - now < 15 * 60 * 1000 &&
+             Date.parse(m.strTimestamp) - now > -3 * 60 * 60 * 1000));
+    } catch (e) {
+        console.error('[wc-odds] fixtures refresh failed:', e.message); // keep previous cache
+        return false;
+    }
+}
+
+// adaptive self-scheduling poll: quick when something's live/imminent, lazy otherwise
+async function fixturesLoop() {
+    const fast = await refreshFixtures('poll');
+    setTimeout(fixturesLoop, (fast ? FIX_LIVE_SEC : FIX_IDLE_SEC) * 1000);
+}
+
 // ---- HTTP server ----
 const corsHeaders = { 'Access-Control-Allow-Origin': ALLOW_ORIGIN, 'Cache-Control': 'public, max-age=300' };
 http.createServer((req, res) => {
@@ -224,6 +285,14 @@ http.createServer((req, res) => {
     if (req.url.startsWith('/highlights.json')) {
         res.writeHead(200, { 'Content-Type': 'application/json', ...corsHeaders });
         return res.end(JSON.stringify(hlCache));
+    }
+    if (req.url.startsWith('/fixtures.json')) {
+        res.writeHead(200, {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': ALLOW_ORIGIN,
+            'Cache-Control': 'no-store', // live data — never cache
+        });
+        return res.end(JSON.stringify(fixturesCache));
     }
     res.writeHead(404, corsHeaders);
     res.end('not found');
@@ -239,4 +308,7 @@ http.createServer((req, res) => {
     // highlights: scrape on startup, then on its own slower cadence (fire-and-forget)
     refreshHighlights('startup');
     setInterval(() => refreshHighlights('poll'), HL_POLL_MIN * 60 * 1000);
+
+    // fixtures: adaptive self-scheduling poll (refreshes immediately, then reschedules)
+    fixturesLoop();
 })();
