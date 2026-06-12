@@ -275,11 +275,38 @@ function mapFixture(m) {
     };
 }
 
+// The league-overview list (fixtures.allMatches) is great for getting every match
+// in one request, but its per-match status can lag or freeze: we've seen it stuck
+// at a live minute (84') long after full time, its status.halfs never gaining a
+// gameEnded. So we don't trust the list for any in-progress match — we re-source
+// its status from the match's OWN page (header.status), which is authoritative for
+// score, finished state and the FT reason. Only the page may omit liveTime once a
+// match is over, so we merge: the page wins for everything it carries, and the
+// list's live minute is kept only as a fallback (harmless, since a finished page
+// makes mapFixture take the FT branch and ignore liveTime). Only matches the list
+// reports as live are fetched, so this is at most a couple of extra requests.
+async function fotmobMatchStatus(pageUrl) {
+    const slug = String(pageUrl || '').split('#')[0];
+    if (!slug) return null;
+    const mnd = await fotmobNextData('https://www.fotmob.com' + slug);
+    return mnd?.props?.pageProps?.header?.status || null;
+}
+
 async function refreshFixtures(reason) {
     try {
         const nd = await fotmobNextData(FOTMOB_LEAGUE_URL);
         const all = nd?.props?.pageProps?.fixtures?.allMatches || [];
+        let sourced = 0;
+        await Promise.all(all.map(async m => {
+            const s = m.status || {};
+            if (!s.started || s.finished || s.cancelled) return; // only in-progress per the list
+            try {
+                const real = await fotmobMatchStatus(m.pageUrl);
+                if (real) { m.status = { ...s, ...real }; sourced++; }
+            } catch (e) { /* keep the list status if the page can't be read */ }
+        }));
         const matches = all.map(mapFixture);
+        if (sourced) console.log(`[wc-odds] fixtures: sourced ${sourced} in-progress match(es) from their own page`);
         fixturesCache = { updated: new Date().toISOString(), source: 'FotMob', count: matches.length, matches };
         const liveN = matches.filter(m => m.state === 'live').length;
         console.log(`[wc-odds] fixtures refreshed (${reason}) — ${matches.length} matches, ${liveN} live`);
