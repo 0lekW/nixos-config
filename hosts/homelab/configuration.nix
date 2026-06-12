@@ -496,7 +496,8 @@
       };
 
       # Cloudflare Tunnel — exposes ONLY odds.olek.co.nz publicly (outbound only,
-      # no ports opened). Token lives in the env file below, never in git.
+      # no ports opened). Serves both /odds.json and /highlights.json from the
+      # wc-odds container. Token lives in the env file below, never in git.
       cloudflared = {
         image = "cloudflare/cloudflared:latest";
         cmd = [ "tunnel" "--no-autoupdate" "run" ];

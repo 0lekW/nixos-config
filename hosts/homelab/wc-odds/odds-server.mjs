@@ -1,4 +1,4 @@
-// World Cup 2026 sweepstake — odds micro-service for the homelab.
+// World Cup 2026 sweepstake — odds + highlights micro-service for the homelab.
 //
 // Watches the (free, keyless) results feed and, a while AFTER a match finishes
 // (so bookmakers have had time to re-price), pulls fresh consensus outright odds
@@ -134,6 +134,85 @@ async function pollResults() {
     }
 }
 
+// ============================================================
+//  HIGHLIGHTS — official match-highlight links, scraped from FotMob.
+//  FotMob's clean JSON endpoint now needs a signed header, so we parse the
+//  __NEXT_DATA__ JSON embedded in their match pages. Served at /highlights.json.
+//  We host NO video — these are links to the official source (fifa.com etc).
+//  Brittle by nature: if the feed empties, FotMob reshaped their page data and
+//  the selectors below (fixtures.allMatches / content.matchFacts.highlights) need a refresh.
+// ============================================================
+const HL_POLL_MIN = Number(process.env.HL_POLL_MINUTES || 30);
+const HL_MAX      = Number(process.env.HL_MAX_CLIPS || 0); // 0 = no cap
+const FOTMOB_WC_LEAGUE = 77; // FotMob FIFA World Cup league id
+const FOTMOB_LEAGUE_URL = `https://www.fotmob.com/leagues/${FOTMOB_WC_LEAGUE}/overview/world-cup`;
+const FOTMOB_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+};
+
+let hlCache = { updated: null, source: 'FotMob → official match highlights', count: 0, clips: [] };
+const hlResolved = new Map(); // matchId -> clip; once it has a url we don't refetch its page
+const hlSleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function fotmobNextData(url) {
+    const r = await fetch(url, { headers: FOTMOB_HEADERS });
+    if (!r.ok) throw new Error(`${r.status} for ${url}`);
+    const html = await r.text();
+    const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+    if (!m) throw new Error(`no __NEXT_DATA__ at ${url}`);
+    return JSON.parse(m[1]);
+}
+function hlParseScore(s) {
+    const m = /(\d+)\s*-\s*(\d+)/.exec(s || '');
+    return m ? [Number(m[1]), Number(m[2])] : [null, null];
+}
+function hlToISO(v) {
+    if (v == null) return null;
+    if (typeof v === 'number') return new Date(v).toISOString();
+    const t = Date.parse(v);
+    return Number.isNaN(t) ? null : new Date(t).toISOString();
+}
+async function refreshHighlights(reason) {
+    try {
+        const nd = await fotmobNextData(FOTMOB_LEAGUE_URL);
+        const all = nd?.props?.pageProps?.fixtures?.allMatches || [];
+        const finished = all.filter(m => m?.status?.finished);
+        for (const m of finished) {
+            const id = String(m.id);
+            const have = hlResolved.get(id);
+            if (have && have.url) continue; // already resolved with a clip
+            try {
+                const slug = String(m.pageUrl || '').split('#')[0];
+                if (!slug) continue;
+                const mnd = await fotmobNextData('https://www.fotmob.com' + slug);
+                const facts = mnd?.props?.pageProps?.content?.matchFacts || {};
+                const hl = facts.highlights || null;
+                const [hs, as] = hlParseScore(m?.status?.scoreStr);
+                hlResolved.set(id, {
+                    id,
+                    home: m.home?.name ?? null,
+                    away: m.away?.name ?? null,
+                    homeScore: hs, awayScore: as,
+                    kickoff: hlToISO(m?.status?.utcTime ?? null),
+                    round: m.roundName || (m.round != null ? `Round ${m.round}` : null),
+                    url: hl?.url || null, source: hl?.source || null, thumb: hl?.image || null,
+                });
+                await hlSleep(400); // be polite between match-page fetches
+            } catch (e) {
+                console.error('[wc-odds] highlight match', id, e.message);
+            }
+        }
+        let clips = [...hlResolved.values()].filter(c => c.url);
+        clips.sort((a, b) => (Date.parse(b.kickoff) || 0) - (Date.parse(a.kickoff) || 0));
+        if (HL_MAX > 0) clips = clips.slice(0, HL_MAX);
+        hlCache = { updated: new Date().toISOString(), source: 'FotMob → official match highlights', count: clips.length, clips };
+        console.log(`[wc-odds] highlights refreshed (${reason}) — ${clips.length} clip(s) from ${finished.length} finished`);
+    } catch (e) {
+        console.error('[wc-odds] highlights refresh failed:', e.message); // keep previous cache
+    }
+}
+
 // ---- HTTP server ----
 const corsHeaders = { 'Access-Control-Allow-Origin': ALLOW_ORIGIN, 'Cache-Control': 'public, max-age=300' };
 http.createServer((req, res) => {
@@ -142,9 +221,13 @@ http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json', ...corsHeaders });
         return res.end(JSON.stringify(cache));
     }
+    if (req.url.startsWith('/highlights.json')) {
+        res.writeHead(200, { 'Content-Type': 'application/json', ...corsHeaders });
+        return res.end(JSON.stringify(hlCache));
+    }
     res.writeHead(404, corsHeaders);
     res.end('not found');
-}).listen(PORT, () => console.log(`[wc-odds] serving /odds.json on :${PORT}`));
+}).listen(PORT, () => console.log(`[wc-odds] serving /odds.json + /highlights.json on :${PORT}`));
 
 // ---- startup: one odds fetch, seed the seen-set so we don't fire for old games ----
 (async () => {
@@ -152,4 +235,8 @@ http.createServer((req, res) => {
     try { (await fetchFinishedIds()).forEach(id => seenFinished.add(id)); } catch (e) {}
     console.log(`[wc-odds] watching results every ${POLL_MIN}m; will refetch ${DELAY_H}h after each finish`);
     setInterval(pollResults, POLL_MIN * 60 * 1000);
+
+    // highlights: scrape on startup, then on its own slower cadence (fire-and-forget)
+    refreshHighlights('startup');
+    setInterval(() => refreshHighlights('poll'), HL_POLL_MIN * 60 * 1000);
 })();
