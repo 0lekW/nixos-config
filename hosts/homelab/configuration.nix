@@ -477,6 +477,24 @@
         extraOptions = [ "--network=homelab" ];
       };
 
+      wc-odds = {
+        image = "node:20-alpine";
+        ports = [ "8764:8764" ];
+        volumes = [
+          "/home/olek/nixos-config/hosts/homelab/wc-odds:/app:ro"
+        ];
+        environmentFiles = [ "/var/lib/wc-odds/odds.env" ]; # holds ODDS_API_KEY=...
+        environment = {
+          TZ = "Pacific/Auckland";
+          PORT = "8764";
+          FINISH_DELAY_HOURS = "2";
+          POLL_MINUTES = "20";
+        };
+        cmd = [ "node" "/app/odds-server.mjs" ];
+        autoStart = true;
+        extraOptions = [ "--network=homelab" ];
+      };
+
     };
   };
 
@@ -533,6 +551,10 @@
     # Vikunja
     "d /var/lib/vikunja 0755 olek docker - -"
     "f /var/lib/vikunja/vikunja.env 0600 olek docker - -"
+
+    # WC sweepstake odds service
+    "d /var/lib/wc-odds 0755 olek docker - -"
+    "f /var/lib/wc-odds/odds.env 0600 olek docker - -"
   ];
 
   # Open ports in the firewall.
@@ -552,6 +574,7 @@
     8761
     8762
     8763
+    8764
     9090
     9100
     9500
