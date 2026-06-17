@@ -151,6 +151,10 @@
   systemd.tmpfiles.rules = [
     "d /tank/shared 0775 olek users -"
     "d /var/lib/filebrowser 0755 olek docker - -"
+
+    "d /var/lib/immich 0750 root root - -"
+    "d /var/lib/immich/model-cache 0750 root root - -"
+    "d /var/lib/immich/postgres 0700 root root - -"
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -223,9 +227,18 @@
     setSocketVariable = true;
   };
 
+  systemd.services.create-immich-network = {
+    serviceConfig.Type = "oneshot";
+    wantedBy = [ "multi-user.target" ];
+    script = ''
+      ${pkgs.docker}/bin/docker network ls | grep immich || ${pkgs.docker}/bin/docker network create immich
+    '';
+  };
+
   virtualisation.oci-containers = {
     backend = "docker";
     containers = {
+
       filebrowser = {
         image = "filebrowser/filebrowser:latest";
         ports = [ "8080:80" ];
@@ -235,6 +248,48 @@
         ];
         autoStart = true;
       };
+
+      immich-server = {
+        image = "ghcr.io/immich-app/immich-server:release";
+        ports = [ "2283:2283" ];
+        dependsOn = [ "immich-redis" "immich-postgres" ];
+        environment = {
+          DB_HOSTNAME = "immich-postgres";
+          DB_USERNAME = "postgres";
+          DB_PASSWORD = "postgres";
+          DB_DATABASE_NAME = "immich";
+          REDIS_HOSTNAME = "immich-redis";
+        };
+        volumes = [ "/tank/shared/Olek/Photos/immich:/data" ];   # was /usr/src/app/upload
+        autoStart = true;
+        extraOptions = [ "--network=immich" ];
+      };
+
+      immich-machine-learning = {
+        image = "ghcr.io/immich-app/immich-machine-learning:release";
+        volumes = [ "/var/lib/immich/model-cache:/cache" ];
+        autoStart = true;
+        extraOptions = [ "--network=immich" ];
+      };
+
+      immich-redis = {
+        image = "docker.io/valkey/valkey:9";                      # was valkey:8-bookworm
+        autoStart = true;
+        extraOptions = [ "--network=immich" ];
+      };
+
+      immich-postgres = {
+        image = "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0";  # tag had drifted
+        environment = {
+          POSTGRES_USER = "postgres";
+          POSTGRES_PASSWORD = "postgres";
+          POSTGRES_DB = "immich";
+        };
+        volumes = [ "/var/lib/immich/postgres:/var/lib/postgresql/data" ];
+        autoStart = true;
+        extraOptions = [ "--network=immich" ];
+      };
+
     };
   };
 
@@ -243,6 +298,7 @@
     22
     139
     445
+    2283
     8080
   ];
   networking.firewall.allowedUDPPorts = [
