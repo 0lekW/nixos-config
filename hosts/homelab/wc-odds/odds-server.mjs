@@ -369,6 +369,9 @@ async function getMatchDetail(id) {
         const nd = await fotmobNextData('https://www.fotmob.com' + String(pageUrl).split('#')[0]);
         data = { ...extractMatchDetail(nd, id), updated: new Date().toISOString() };
     }
+    // An unknown id yields an empty-but-valid object from the API — treat as not found (→ 404)
+    // rather than caching/serving a blank match.
+    if (!data || (!data.home?.name && !data.away?.name)) return null;
     detailCache.set(id, { at: now, data });
     return data;
 }
