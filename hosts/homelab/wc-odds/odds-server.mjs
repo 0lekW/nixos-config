@@ -16,6 +16,8 @@
 
 import http from 'node:http';
 import fs from 'node:fs';
+import { extractMatchDetail } from './match-detail.mjs';
+import { fotmobApi } from './fotmob-auth.mjs';
 
 const KEY          = process.env.ODDS_API_KEY;
 const PORT         = Number(process.env.PORT || 8764);
@@ -250,6 +252,7 @@ const FIX_LIVE_SEC = Number(process.env.FIX_LIVE_SECONDS || 45);
 const FIX_IDLE_SEC = Number(process.env.FIX_IDLE_SECONDS || 300);
 
 let fixturesCache = { updated: null, source: 'FotMob', count: 0, matches: [] };
+const fixturePages = new Map(); // matchId -> FotMob pageUrl, for on-demand match detail
 
 function mapFixture(m) {
     const s = m.status || {};
@@ -285,8 +288,15 @@ function mapFixture(m) {
 // list's live minute is kept only as a fallback (harmless, since a finished page
 // makes mapFixture take the FT branch and ignore liveTime). Only matches the list
 // reports as live are fetched, so this is at most a couple of extra requests.
-async function fotmobMatchStatus(pageUrl) {
-    const slug = String(pageUrl || '').split('#')[0];
+async function fotmobMatchStatus(m) {
+    // Live, authoritative status from the authed API (real-time score/minute). Falls back
+    // to the match page's SSR snapshot if the token fails — that lags live play but never
+    // leaves us worse off than the old scrape-only behaviour.
+    try {
+        const st = (await fotmobApi('/matchDetails?matchId=' + encodeURIComponent(m.id)))?.header?.status;
+        if (st) return st;
+    } catch (e) { /* fall through to page scrape */ }
+    const slug = String(m.pageUrl || '').split('#')[0];
     if (!slug) return null;
     const mnd = await fotmobNextData('https://www.fotmob.com' + slug);
     return mnd?.props?.pageProps?.header?.status || null;
@@ -296,12 +306,13 @@ async function refreshFixtures(reason) {
     try {
         const nd = await fotmobNextData(FOTMOB_LEAGUE_URL);
         const all = nd?.props?.pageProps?.fixtures?.allMatches || [];
+        for (const m of all) if (m?.id != null && m.pageUrl) fixturePages.set(String(m.id), String(m.pageUrl));
         let sourced = 0;
         await Promise.all(all.map(async m => {
             const s = m.status || {};
             if (!s.started || s.finished || s.cancelled) return; // only in-progress per the list
             try {
-                const real = await fotmobMatchStatus(m.pageUrl);
+                const real = await fotmobMatchStatus(m);
                 if (real) { m.status = { ...s, ...real }; sourced++; }
             } catch (e) { /* keep the list status if the page can't be read */ }
         }));
@@ -325,6 +336,41 @@ async function refreshFixtures(reason) {
 async function fixturesLoop() {
     const fast = await refreshFixtures('poll');
     setTimeout(fixturesLoop, (fast ? FIX_LIVE_SEC : FIX_IDLE_SEC) * 1000);
+}
+
+// ============================================================
+//  MATCH DETAIL — scorers, player ratings & key stats for one match, on demand.
+//  Served at /match.json?id=<fotmobMatchId>. We only fetch a match's own page when
+//  someone actually opens it, then cache: briefly while live (ratings still moving),
+//  long once finished (immutable). Keeps us off FotMob unless a popup is opened.
+// ============================================================
+const DETAIL_TTL_LIVE = Number(process.env.DETAIL_TTL_LIVE_SEC || 30) * 1000;
+const DETAIL_TTL_DONE = Number(process.env.DETAIL_TTL_DONE_SEC || 21600) * 1000; // 6h
+const detailCache = new Map(); // matchId -> { at, data }
+
+async function getMatchDetail(id) {
+    const now = Date.now();
+    const hit = detailCache.get(id);
+    if (hit) {
+        const ttl = hit.data?.state === 'finished' || hit.data?.state === 'cancelled' ? DETAIL_TTL_DONE : DETAIL_TTL_LIVE;
+        if (now - hit.at < ttl) return hit.data;
+    }
+    let data = null;
+    // Primary: authed live API — fresh score, live ratings, full detail.
+    try {
+        const api = await fotmobApi('/matchDetails?matchId=' + encodeURIComponent(id));
+        data = { ...extractMatchDetail({ props: { pageProps: api } }, id), updated: new Date().toISOString() };
+    } catch (e) {
+        // Fallback: scrape the match page's SSR snapshot (no token needed, but lags live).
+        console.warn('[wc-odds] match detail API failed, scraping page:', e.message);
+        let pageUrl = fixturePages.get(id);
+        if (!pageUrl) { await refreshFixtures('detail-miss'); pageUrl = fixturePages.get(id); }
+        if (!pageUrl) return null;
+        const nd = await fotmobNextData('https://www.fotmob.com' + String(pageUrl).split('#')[0]);
+        data = { ...extractMatchDetail(nd, id), updated: new Date().toISOString() };
+    }
+    detailCache.set(id, { at: now, data });
+    return data;
 }
 
 // ---- HTTP server ----
@@ -351,9 +397,23 @@ http.createServer((req, res) => {
         });
         return res.end(JSON.stringify(fixturesCache));
     }
+    if (req.url.startsWith('/match.json')) {
+        const id = new URL(req.url, 'http://x').searchParams.get('id');
+        if (!id) { res.writeHead(400, corsHeaders); return res.end('missing id'); }
+        getMatchDetail(String(id)).then(data => {
+            if (!data) { res.writeHead(404, { 'Content-Type': 'application/json', ...corsHeaders }); return res.end('{"error":"unknown match"}'); }
+            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': ALLOW_ORIGIN, 'Cache-Control': 'no-store' });
+            res.end(JSON.stringify(data));
+        }).catch(e => {
+            console.error('[wc-odds] match detail', id, e.message);
+            res.writeHead(502, { 'Content-Type': 'application/json', ...corsHeaders });
+            res.end('{"error":"detail unavailable"}');
+        });
+        return;
+    }
     res.writeHead(404, corsHeaders);
     res.end('not found');
-}).listen(PORT, () => console.log(`[wc-odds] serving /odds.json + /highlights.json on :${PORT}`));
+}).listen(PORT, () => console.log(`[wc-odds] serving /odds.json + /highlights.json + /fixtures.json + /match.json on :${PORT}`));
 
 // ---- startup: one odds fetch, seed the seen-set so we don't fire for old games ----
 (async () => {
