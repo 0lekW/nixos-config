@@ -17,6 +17,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import { extractMatchDetail } from './match-detail.mjs';
+import { extractBracket } from './bracket.mjs';
 import { fotmobApi } from './fotmob-auth.mjs';
 
 const KEY          = process.env.ODDS_API_KEY;
@@ -308,9 +309,16 @@ async function refreshFixtures(reason) {
         const all = nd?.props?.pageProps?.fixtures?.allMatches || [];
         for (const m of all) if (m?.id != null && m.pageUrl) fixturePages.set(String(m.id), String(m.pageUrl));
         let sourced = 0;
+        // Re-source any match that is (or should be) under way from the authed API. The SSR
+        // list can lag — reporting started:false long after kickoff — so we also check matches
+        // whose kickoff has passed within the last few hours, not just ones the list flags live.
+        const nowMs = Date.now();
         await Promise.all(all.map(async m => {
             const s = m.status || {};
-            if (!s.started || s.finished || s.cancelled) return; // only in-progress per the list
+            if (s.finished || s.cancelled) return;
+            const ko = Date.parse(s.utcTime || 0);
+            const shouldBeLive = s.started || (ko && ko <= nowMs && (nowMs - ko) < 3.5 * 3600 * 1000);
+            if (!shouldBeLive) return;
             try {
                 const real = await fotmobMatchStatus(m);
                 if (real) { m.status = { ...s, ...real }; sourced++; }
@@ -376,6 +384,51 @@ async function getMatchDetail(id) {
     return data;
 }
 
+// ============================================================
+//  KNOCKOUT BRACKET — the full playoff tree for the bracket widget, served at
+//  /bracket.json. Structure (rounds, draw order, teams/TBD slots) comes from the
+//  league page's SSR playoff blob; live scores for in-progress knockout matches are
+//  overlaid from the authed API, same as fixtures.
+// ============================================================
+const BRACKET_TTL = Number(process.env.BRACKET_TTL_SEC || 60) * 1000;
+let bracketCache = { at: 0, data: null };
+async function getBracket() {
+    if (bracketCache.data && Date.now() - bracketCache.at < BRACKET_TTL) return bracketCache.data;
+    const nd = await fotmobNextData(FOTMOB_LEAGUE_URL);
+    const data = extractBracket(nd?.props?.pageProps?.playoff);
+    // Re-source matches that are (or should be by kickoff) under way from the authed API,
+    // since the SSR playoff blob lags live play just like the fixtures list.
+    const now = Date.now();
+    const shouldCheck = mu => {
+        if (!mu || !mu.matchId || mu.state === 'finished' || mu.state === 'cancelled') return false;
+        if (mu.state === 'live') return true;
+        const ko = Date.parse(mu.kickoff || 0);
+        return ko && ko <= now && (now - ko) < 3.5 * 3600 * 1000;
+    };
+    const cand = [...data.rounds.flatMap(r => r.matchups), data.bronze].filter(shouldCheck);
+    await Promise.all(cand.map(async mu => {
+        try {
+            const st = (await fotmobApi('/matchDetails?matchId=' + mu.matchId))?.header?.status;
+            if (!st) return;
+            const [hs, as] = hlParseScore(st.scoreStr);
+            if (st.finished) {
+                mu.state = 'finished'; mu.label = st.reason?.short || 'FT';
+                if (hs != null) mu.home.score = hs; if (as != null) mu.away.score = as;
+                if (hs != null && as != null) { mu.home.winner = hs > as; mu.away.winner = as > hs; }
+            } else if (st.started) {
+                mu.state = 'live'; mu.label = st.liveTime?.short || st.reason?.short || 'LIVE';
+                if (hs != null) mu.home.score = hs; if (as != null) mu.away.score = as;
+            }
+        } catch (e) { /* keep SSR data */ }
+    }));
+    const liveCount = cand.filter(m => m.state === 'live').length;
+    data.updated = new Date().toISOString();
+    bracketCache = { at: Date.now(), data };
+    const n = data.rounds.reduce((a, r) => a + r.matchups.length, 0) + (data.bronze ? 1 : 0);
+    console.log(`[wc-odds] bracket refreshed — ${data.rounds.length} rounds, ${n} matchups, ${liveCount} live`);
+    return data;
+}
+
 // ---- HTTP server ----
 const corsHeaders = { 'Access-Control-Allow-Origin': ALLOW_ORIGIN, 'Cache-Control': 'public, max-age=300' };
 http.createServer((req, res) => {
@@ -400,6 +453,13 @@ http.createServer((req, res) => {
         });
         return res.end(JSON.stringify(fixturesCache));
     }
+    if (req.url.startsWith('/bracket.json')) {
+        getBracket().then(d => {
+            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': ALLOW_ORIGIN, 'Cache-Control': 'no-store' });
+            res.end(JSON.stringify(d));
+        }).catch(e => { console.error('[wc-odds] bracket', e.message); res.writeHead(502, corsHeaders); res.end('{"error":"bracket unavailable"}'); });
+        return;
+    }
     if (req.url.startsWith('/match.json')) {
         const id = new URL(req.url, 'http://x').searchParams.get('id');
         if (!id) { res.writeHead(400, corsHeaders); return res.end('missing id'); }
@@ -416,7 +476,7 @@ http.createServer((req, res) => {
     }
     res.writeHead(404, corsHeaders);
     res.end('not found');
-}).listen(PORT, () => console.log(`[wc-odds] serving /odds.json + /highlights.json + /fixtures.json + /match.json on :${PORT}`));
+}).listen(PORT, () => console.log(`[wc-odds] serving /odds.json + /highlights.json + /fixtures.json + /match.json + /bracket.json on :${PORT}`));
 
 // ---- startup: one odds fetch, seed the seen-set so we don't fire for old games ----
 (async () => {
