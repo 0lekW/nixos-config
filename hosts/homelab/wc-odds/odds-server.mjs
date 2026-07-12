@@ -116,7 +116,10 @@ async function refreshOdds(reason) {
         }
 
         const matched = Object.keys(teams).length;
-        if (matched < 10) { console.error(`[wc-odds] only ${matched} teams matched — keeping previous`); return; }
+        // Sanity floor against an empty/mangled API response. Keep this low: deep in
+        // the knockouts bookmakers only quote the remaining 2–4 teams, so a group-stage
+        // threshold would silently freeze the feed for the last week of the tournament.
+        if (matched < 2) { console.error(`[wc-odds] only ${matched} teams matched — keeping previous`); return; }
 
         cache = {
             updated: new Date().toISOString(),
