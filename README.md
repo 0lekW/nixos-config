@@ -25,9 +25,9 @@ This repository contains my personal NixOS flake-based system configurations.
 - **Open WebUI** — Web UI for LLMs at `https://ai.olek.co.nz` or `http://<homelab-ip>:3001`
 - **[lupin](https://github.com/0lekW/lupin)** - Ollama task scheduler and notification system at `https://lupin.olek.co.nz` or `http://<homelab-ip>::9500`
 - **Vikunja** - Task manager at `https://tasks.olek.co.nz` or `http://<homelab-ip>:8963`
+- **Tailscale** - Tailscale for remote access to services on this machine.
 
 **To-do (homelab):**
-- [ ] Remote access to services using Wireguard
 - [ ] Add HDDs to machine
 - [ ] Add Gemma4 in ollama
 
@@ -37,7 +37,8 @@ This repository contains my personal NixOS flake-based system configurations.
 
 **Currently configured:**
 - **Samba** - NFS
-- **FileBrowser** - Web UI file browser at `nfs.olek.co.nz` or `192.168.1.201::8080` 
+- **FileBrowser** - Web UI file browser at `nfs.olek.co.nz` or `192.168.1.201::8080`
+- **Immich** - Photo manager and backups at `photos.olek.co.nz` or 192.168.1.201:2283` 
 
 **To-do (homelab_zfs):**
 - [ ] - 

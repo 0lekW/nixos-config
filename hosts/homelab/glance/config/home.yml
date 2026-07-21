@@ -20,6 +20,9 @@
                 - title: FileBrowser
                   url: https://files.olek.co.nz
                   icon: mdi:folder-cog
+                - title: Immich
+                  url: https://photos.olek.co.nz
+                  icon: si:immich
             - title: Apps
               links:
                 - title: Vikunja

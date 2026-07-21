@@ -477,6 +477,27 @@
         extraOptions = [ "--network=homelab" ];
       };
 
+      tailscale = {
+        image = "tailscale/tailscale:latest";
+        volumes = [
+          "/var/lib/tailscale:/var/lib/tailscale"
+          "/dev/net/tun:/dev/net/tun"
+        ];
+        environment = {
+          TS_STATE_DIR = "/var/lib/tailscale";
+          TS_HOSTNAME = "homelab";
+          TS_USERSPACE = "false";
+          TS_ACCEPT_DNS = "false";
+        };
+        environmentFiles = [ "/var/lib/tailscale/tailscale.env" ];
+        extraOptions = [
+          "--network=host"
+          "--cap-add=NET_ADMIN"
+          "--cap-add=SYS_MODULE"
+        ];
+        autoStart = true;
+      };
+
     };
   };
 
@@ -533,6 +554,10 @@
     # Vikunja
     "d /var/lib/vikunja 0755 olek docker - -"
     "f /var/lib/vikunja/vikunja.env 0600 olek docker - -"
+
+    # Tailscale
+    "d /var/lib/tailscale 0700 root root - -"
+    "f /var/lib/tailscale/tailscale.env 0600 root root - -"
   ];
 
   # Open ports in the firewall.
