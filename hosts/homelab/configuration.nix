@@ -145,6 +145,10 @@
     "8.8.8.8"
   ];
 
+  # Required so the tailscale container can act as a subnet router
+  boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+  boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
+
   # Create the network for docker containers
   systemd.services.create-homelab-network = {
     serviceConfig.Type = "oneshot";
