@@ -38,7 +38,7 @@ This repository contains my personal NixOS flake-based system configurations.
 **Currently configured:**
 - **Samba** - NFS
 - **FileBrowser** - Web UI file browser at `nfs.olek.co.nz` or `192.168.1.201::8080`
-- **Immich** - Photo manager and backups at `photos.olek.co.nz` or 192.168.1.201:2283` 
+- **Immich** - Photo manager and backups at `photos.olek.co.nz` or `192.168.1.201:2283` 
 
 **To-do (homelab_zfs):**
 - [ ] - 
