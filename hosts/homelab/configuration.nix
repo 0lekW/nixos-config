@@ -326,7 +326,7 @@
         ports = [ "9090:9090" ];
         volumes = [
           "/var/lib/prometheus:/prometheus"
-          "/var/lib/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+          "${./monitoring/prometheus.yml}:/etc/prometheus/prometheus.yml:ro"
         ];
         autoStart = true;
         extraOptions = [ "--network=homelab" ];
@@ -352,6 +352,8 @@
         ports = [ "3000:3000" ];
         volumes = [
           "/var/lib/grafana:/var/lib/grafana"
+          "${./monitoring/grafana/provisioning}:/etc/grafana/provisioning:ro"
+          "${./monitoring/grafana/dashboards}:/etc/grafana/dashboards:ro"
         ];
         environment = {
           TZ = "Pacific/Auckland";
@@ -528,7 +530,6 @@
 
     # System monitoring
     "d /var/lib/prometheus 0770 65534 65534 - -"
-    "f /var/lib/prometheus/prometheus.yml 0644 olek docker - -"
     "d /var/lib/grafana 0755 472 472 - -"
 
     # Nginx Proxy Manager
