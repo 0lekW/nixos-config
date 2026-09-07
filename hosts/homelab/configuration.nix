@@ -108,6 +108,20 @@
 
   programs.nix-ld.enable = true;
 
+  # Encrypted secrets, committed to the repo in secrets/homelab.yaml.
+  # The host unlocks them at boot using the private half of its SSH host key,
+  # so a rebuild from scratch needs nothing typed in by hand.
+  sops = {
+    defaultSopsFile = ../../secrets/homelab.yaml;
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    secrets = {
+      pihole_env = { };
+      vikunja_env = { };
+      tailscale_env = { };
+      closet_env = { };
+    };
+  };
+
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
@@ -234,7 +248,7 @@
           "53:53/udp" # DNS UDP
           "8082:8082/tcp" # Web interface
         ];
-        environmentFiles = [ "/var/lib/pihole/pihole.env" ];
+        environmentFiles = [ config.sops.secrets.pihole_env.path ];
         environment = {
           TZ = "Pacific/Auckland";
           FTLCONF_webserver_api_max_sessions = "50";
@@ -409,12 +423,12 @@
       oleks-closet = {
         image = "0iek/oleks-closet:latest";
         ports = [ "8762:8762" ];
+        environmentFiles = [ config.sops.secrets.closet_env.path ];
         volumes = [
           "/var/lib/oleks-closet/data:/app/data"
           "/var/lib/oleks-closet/uploads:/app/app/static/uploads"
         ];
         environment = {
-          SECRET_KEY = "dev-not-important-on-lan";
           SQLALCHEMY_DATABASE_URI = "sqlite:////app/data/closet.db";
         };
         autoStart = true;
@@ -478,7 +492,7 @@
           VIKUNJA_DATABASE_PATH = "/app/vikunja/files/vikunja.db";
           VIKUNJA_SERVICE_PUBLICURL = "http://192.168.1.200:8763";
         };
-        environmentFiles = [ "/var/lib/vikunja/vikunja.env" ];
+        environmentFiles = [ config.sops.secrets.vikunja_env.path ];
         autoStart = true;
         extraOptions = [ "--network=homelab" ];
       };
@@ -495,7 +509,7 @@
           TS_USERSPACE = "false";
           TS_ACCEPT_DNS = "false";
         };
-        environmentFiles = [ "/var/lib/tailscale/tailscale.env" ];
+        environmentFiles = [ config.sops.secrets.tailscale_env.path ];
         extraOptions = [
           "--network=host"
           "--cap-add=NET_ADMIN"
@@ -523,7 +537,6 @@
     # Pi-hole
     "d /var/lib/pihole 0755 olek docker - -"
     "d /var/lib/pihole/etc-pihole 0755 olek docker - -"
-    "f /var/lib/pihole/pihole.env 0600 olek docker - -"
 
     # File browser
     "d /var/lib/filebrowser 0755 olek docker - -"
@@ -558,11 +571,9 @@
 
     # Vikunja
     "d /var/lib/vikunja 0755 olek docker - -"
-    "f /var/lib/vikunja/vikunja.env 0600 olek docker - -"
 
     # Tailscale
     "d /var/lib/tailscale 0700 root root - -"
-    "f /var/lib/tailscale/tailscale.env 0600 root root - -"
   ];
 
   # Open ports in the firewall.
