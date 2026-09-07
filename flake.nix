@@ -37,6 +37,8 @@
       inherit system;
       modules = [
         ({ ... }: { nixpkgs.overlays = [ overlay-unstable ]; })
+        sops-nix.nixosModules.sops
+        { sops.package = sops-nix.packages.${system}.sops-install-secrets; }
         ./hosts/homelab_zfs/configuration.nix
       ];
     };

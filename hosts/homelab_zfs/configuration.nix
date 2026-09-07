@@ -93,6 +93,14 @@
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [ "tank" ];
 
+  # Encrypted secrets, committed to the repo in secrets/homelab_zfs.yaml.
+  # Unlocked at boot using the private half of this host's SSH key.
+  sops = {
+    defaultSopsFile = ../../secrets/homelab_zfs.yaml;
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    secrets.immich_env = { };
+  };
+
   services.zfs = {
     autoScrub.enable = true; # monthly scrub (integrity check)
   };
@@ -252,11 +260,11 @@
       immich-server = {
         image = "ghcr.io/immich-app/immich-server:release";
         ports = [ "2283:2283" ];
+        environmentFiles = [ config.sops.secrets.immich_env.path ];
         dependsOn = [ "immich-redis" "immich-postgres" ];
         environment = {
           DB_HOSTNAME = "immich-postgres";
           DB_USERNAME = "postgres";
-          DB_PASSWORD = "postgres";
           DB_DATABASE_NAME = "immich";
           REDIS_HOSTNAME = "immich-redis";
         };
@@ -280,9 +288,9 @@
 
       immich-postgres = {
         image = "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0";  # tag had drifted
+        environmentFiles = [ config.sops.secrets.immich_env.path ];
         environment = {
           POSTGRES_USER = "postgres";
-          POSTGRES_PASSWORD = "postgres";
           POSTGRES_DB = "immich";
         };
         volumes = [ "/var/lib/immich/postgres:/var/lib/postgresql/data" ];
