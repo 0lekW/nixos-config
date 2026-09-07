@@ -1,26 +1,14 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
 { config, pkgs, ... }:
 
 {
   imports = [
-    # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ../../modules/common.nix
   ];
 
-  networking.hostName = "nixos_zfs_storage"; # Define your hostname.
-  networking.hostId = "afd9d661";
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking.hostName = "nixos_zfs_storage";
+  networking.hostId = "afd9d661"; # required by ZFS
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
   environment.systemPackages = with pkgs; [
     vim
     git
@@ -35,12 +23,11 @@
     zfs
   ];
 
-  # --- ZFS: enable and tune ---
+  # RAIDZ1 pool across three SSDs, mounted at /tank.
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [ "tank" ];
 
-  # Encrypted secrets, committed to the repo in secrets/homelab_zfs.yaml.
-  # Unlocked at boot using the private half of this host's SSH key.
+  # Secrets are unlocked at boot with this host's SSH key.
   sops = {
     defaultSopsFile = ../../secrets/homelab_zfs.yaml;
     age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
@@ -51,7 +38,7 @@
     autoScrub.enable = true; # monthly scrub (integrity check)
   };
 
-  # Declarative first-run creation of the pool:
+  # Creates the pool on a fresh install; no-op once it exists.
   systemd.services."zpool-create-tank" = {
     description = "Create ZFS pool 'tank' (RAIDZ1 on sdb/sdc/sdd) if missing";
     wantedBy = [ "multi-user.target" ];
@@ -111,16 +98,6 @@
     "d /var/lib/immich/postgres 0700 root root - -"
   ];
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
-
   networking.interfaces.eno8303.ipv4.addresses = [
     {
       address = "192.168.1.201";
@@ -128,7 +105,7 @@
     }
   ];
 
-  # Samba for NFS
+  # SMB share of /tank/shared, LAN only.
   services.samba = {
     enable = true;
     openFirewall = true;
@@ -180,14 +157,17 @@
         image = "ghcr.io/immich-app/immich-server:v2.7.5@sha256:c15bff75068effb03f4355997d03dc7e0fc58720c2b54ad6f7f10d1bc57efaa5";
         ports = [ "2283:2283" ];
         environmentFiles = [ config.sops.secrets.immich_env.path ];
-        dependsOn = [ "immich-redis" "immich-postgres" ];
+        dependsOn = [
+          "immich-redis"
+          "immich-postgres"
+        ];
         environment = {
           DB_HOSTNAME = "immich-postgres";
           DB_USERNAME = "postgres";
           DB_DATABASE_NAME = "immich";
           REDIS_HOSTNAME = "immich-redis";
         };
-        volumes = [ "/tank/shared/Olek/Photos/immich:/data" ];   # was /usr/src/app/upload
+        volumes = [ "/tank/shared/Olek/Photos/immich:/data" ]; # was /usr/src/app/upload
         autoStart = true;
         extraOptions = [ "--network=immich" ];
       };
@@ -200,13 +180,13 @@
       };
 
       immich-redis = {
-        image = "docker.io/valkey/valkey:9@sha256:4963247afc4cd33c7d3b2d2816b9f7f8eeebab148d29056c2ca4d7cbc966f2d9";                      # was valkey:8-bookworm
+        image = "docker.io/valkey/valkey:9@sha256:4963247afc4cd33c7d3b2d2816b9f7f8eeebab148d29056c2ca4d7cbc966f2d9"; # was valkey:8-bookworm
         autoStart = true;
         extraOptions = [ "--network=immich" ];
       };
 
       immich-postgres = {
-        image = "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23";  # tag had drifted
+        image = "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23"; # tag had drifted
         environmentFiles = [ config.sops.secrets.immich_env.path ];
         environment = {
           POSTGRES_USER = "postgres";
@@ -220,27 +200,18 @@
     };
   };
 
-  # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [
-    22
-    139
-    445
-    2283
-    8080
+    22 # SSH
+    139 # Samba
+    445 # Samba
+    2283 # Immich
+    8080 # FileBrowser
   ];
   networking.firewall.allowedUDPPorts = [
-    137
-    138
+    137 # NetBIOS
+    138 # NetBIOS
   ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
 
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "25.05"; # Did you read the comment?
+  system.stateVersion = "25.05";
 
 }

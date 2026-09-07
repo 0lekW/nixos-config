@@ -1,8 +1,6 @@
-# Who can decrypt what. Public keys only, safe to commit.
+# Which keys may decrypt which secrets. Public keys only.
 keys:
-  # Your personal key, lives at ~/.config/sops/age/keys.txt on the homelab.
   - &olek age1wztksz69ygd99uv084sd3ptv475a4g5gdcypfrj8zyc686np95zsj9mn9l
-  # Each machine's own key, derived from its SSH host key.
   - &homelab age1q72y4dvg7wmyn0tzk5rzt8l5w3pmtxd8l37qjp2sasmx8n06vq4sce54rf
   - &homelab_zfs age15hfraqqf5ck39ta3jpa75wvkzm5k96djfatfdh8ztz2hylrzxvmsq4apuz
 

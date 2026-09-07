@@ -1,6 +1,4 @@
-# Metrics collection and dashboards.
-#
-# Everything this stack needs lives in this directory: the scrape config,
+# Metrics and dashboards. Scrape config and dashboard JSON live beside this file.
 # the provisioned datasource and dashboards, and the containers below.
 { ... }:
 

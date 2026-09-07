@@ -1,4 +1,4 @@
-# Configuration shared by every machine in this flake.
+# Shared by every host.
 { pkgs, ... }:
 
 {
@@ -7,7 +7,7 @@
 
   networking.networkmanager.enable = true;
 
-  # Every host sits on the same LAN behind the same router.
+  # Same LAN, same router.
   networking.useDHCP = false;
   networking.defaultGateway = "192.168.1.254";
   networking.nameservers = [
