@@ -142,6 +142,14 @@
   virtualisation.oci-containers = {
     backend = "docker";
     containers = {
+      # Exposes this host's containers to the Dozzle instance on the homelab.
+      dozzle-agent = {
+        image = "amir20/dozzle:v10.10.0@sha256:2875e3c1f31f2244ee99d6067b53852b30666b3e2fb293d179bc8be94b1da5eb";
+        cmd = [ "agent" ];
+        ports = [ "7007:7007" ];
+        volumes = [ "/var/run/docker.sock:/var/run/docker.sock:ro" ];
+        autoStart = true;
+      };
 
       filebrowser = {
         image = "filebrowser/filebrowser@sha256:f63369420687482dfdf252f80ef675f44ca1d1cd3a631261fb424136214fe629";
@@ -206,6 +214,7 @@
     445 # Samba
     2283 # Immich
     8080 # FileBrowser
+    7007 # Dozzle agent
   ];
   networking.firewall.allowedUDPPorts = [
     137 # NetBIOS
