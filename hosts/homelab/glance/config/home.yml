@@ -73,6 +73,10 @@
               url: http://nginx.olek.co.nz
               check-url: http://nginx-proxy-manager:81
               icon: si:nginx
+            - title: Dozzle
+              url: http://192.168.1.200:8087
+              check-url: http://dozzle:8080
+              icon: di:dozzle
             - title: Minecraft Panel
               url: https://mc.olek.co.nz
               check-url: https://crafty-controller:8443
