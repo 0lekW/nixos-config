@@ -18,6 +18,7 @@ My personal NixOS flake-based system configurations.
 - **Grafana** — Dashboards at `http://graphs.olek.co.nz` or `http://<homelab-ip>:3000`
 - **Prometheus** — Metrics store at `http://prometheus.olek.co.nz` or `http://<homelab-ip>:9090`
 - **node-exporter / cAdvisor** — Host and container metrics
+- **Dozzle** — Live container logs from both machines at `https://dozzle.olek.co.nz` or `http://<homelab-ip>:8087`
 
 **Media** (`media.nix`)
 - **qBittorrent** — Torrents at `http://torrent.olek.co.nz` or `http://<homelab-ip>:8081`
@@ -46,6 +47,7 @@ My personal NixOS flake-based system configurations.
 - **Samba** — SMB share of `/tank/shared`, LAN only
 - **FileBrowser** — Web file browser at `nfs.olek.co.nz` or `http://192.168.1.201:8080`
 - **Immich** — Photo manager and backups at `photos.olek.co.nz` or `http://192.168.1.201:2283`
+- **Dozzle agent** — Exposes this host's containers to the homelab's Dozzle
 
 **To-do (homelab_zfs):**
 - [ ] 
