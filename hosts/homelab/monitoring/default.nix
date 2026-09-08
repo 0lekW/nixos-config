@@ -71,6 +71,8 @@
     dozzle = {
       image = "amir20/dozzle:v10.10.0@sha256:2875e3c1f31f2244ee99d6067b53852b30666b3e2fb293d179bc8be94b1da5eb";
       ports = [ "8087:8080" ];
+      # Pulls in the containers running on the ZFS box via its Dozzle agent.
+      environment.DOZZLE_REMOTE_AGENT = "192.168.1.201:7007";
       volumes = [ "/var/run/docker.sock:/var/run/docker.sock:ro" ];
       autoStart = true;
       extraOptions = [ "--network=homelab" ];
