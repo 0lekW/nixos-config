@@ -7,56 +7,77 @@
         - type: calendar
           first-day-of-week: monday
 
-        - type: bookmarks
-          groups:
-            - title: Media
-              links:
-                - title: Jellyfin
-                  url: http://jellyfin.olek.co.nz
-                  icon: si:jellyfin
-                - title: qBittorrent
-                  url: http://torrent.olek.co.nz
-                  icon: si:qbittorrent
-                - title: FileBrowser
-                  url: https://files.olek.co.nz
-                  icon: mdi:folder-cog
-                - title: Immich
-                  url: https://photos.olek.co.nz
-                  icon: si:immich
-            - title: Apps
-              links:
-                - title: Vikunja
-                  url: https://tasks.olek.co.nz
-                  icon: mdi:checkbox-marked-circle
-                - title: Open WebUI
-                  url: https://ai.olek.co.nz
-                  icon: mdi:robot
-                - title: Lupin
-                  url: https://lupin.olek.co.nz
-                  icon: mdi:bell-alert
-                - title: Oleks Closet
-                  url: https://closet.olek.co.nz
-                  icon: https://raw.githubusercontent.com/0lekW/oleks-closet/main/app/static/images/favicon.png
-                - title: JSON Formatter
-                  url: https://json.olek.co.nz
-                  icon: https://raw.githubusercontent.com/0lekW/0lekW.github.io/main/images/projects/cjsonfmt-ui-logo.png
-            - title: Infra
-              links:
-                - title: Pi-hole
-                  url: http://pihole.olek.co.nz/admin
-                  icon: si:pihole
-                - title: Grafana
-                  url: http://graphs.olek.co.nz
-                  icon: si:grafana
-                - title: Prometheus
-                  url: http://prometheus.olek.co.nz
-                  icon: si:prometheus
-                - title: Nginx Proxy Manager
-                  url: http://nginx.olek.co.nz
-                  icon: si:nginx
-                - title: Minecraft Panel
-                  url: https://mc.olek.co.nz
-                  icon: si:minecraft
+        - type: monitor
+          cache: 1m
+          title: Media
+          sites:
+            - title: Jellyfin
+              url: http://jellyfin.olek.co.nz
+              check-url: http://jellyfin:8096
+              icon: si:jellyfin
+            - title: qBittorrent
+              url: http://torrent.olek.co.nz
+              check-url: http://qbittorrent:8081
+              icon: si:qbittorrent
+            - title: FileBrowser
+              url: https://files.olek.co.nz
+              check-url: http://filebrowser:80
+              icon: mdi:folder-cog
+            - title: Immich
+              url: https://photos.olek.co.nz
+              check-url: http://192.168.1.201:2283
+              icon: si:immich
+
+        - type: monitor
+          cache: 1m
+          title: Apps
+          sites:
+            - title: Vikunja
+              url: https://tasks.olek.co.nz
+              check-url: http://vikunja:3456
+              icon: mdi:checkbox-marked-circle
+            - title: Open WebUI
+              url: https://ai.olek.co.nz
+              check-url: http://open-webui:8080
+              icon: mdi:robot
+            - title: Lupin
+              url: https://lupin.olek.co.nz
+              check-url: http://lupin:9500
+              icon: mdi:bell-alert
+            - title: Oleks Closet
+              url: https://closet.olek.co.nz
+              check-url: http://oleks-closet:8762
+              icon: https://raw.githubusercontent.com/0lekW/oleks-closet/main/app/static/images/favicon.png
+            - title: JSON Formatter
+              url: https://json.olek.co.nz
+              check-url: http://cjsonfmt-ui:8761
+              icon: https://raw.githubusercontent.com/0lekW/0lekW.github.io/main/images/projects/cjsonfmt-ui-logo.png
+
+        - type: monitor
+          cache: 1m
+          title: Infra
+          sites:
+            - title: Pi-hole
+              url: http://pihole.olek.co.nz/admin
+              check-url: http://pihole:8082/admin
+              icon: si:pihole
+            - title: Grafana
+              url: http://graphs.olek.co.nz
+              check-url: http://grafana:3000
+              icon: si:grafana
+            - title: Prometheus
+              url: http://prometheus.olek.co.nz
+              check-url: http://prometheus:9090
+              icon: si:prometheus
+            - title: Nginx Proxy Manager
+              url: http://nginx.olek.co.nz
+              check-url: http://nginx-proxy-manager:81
+              icon: si:nginx
+            - title: Minecraft Panel
+              url: https://mc.olek.co.nz
+              check-url: https://crafty-controller:8443
+              allow-insecure: true
+              icon: si:minecraft
 
     - size: full
       widgets:

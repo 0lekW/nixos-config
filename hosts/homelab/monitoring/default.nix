@@ -66,6 +66,16 @@
       extraOptions = [ "--network=homelab" ];
     };
 
+    # Live container logs in the browser. The socket is mounted read-only,
+    # but it still exposes full control of the daemon to anyone who reaches it.
+    dozzle = {
+      image = "amir20/dozzle:v10.10.0@sha256:2875e3c1f31f2244ee99d6067b53852b30666b3e2fb293d179bc8be94b1da5eb";
+      ports = [ "8087:8080" ];
+      volumes = [ "/var/run/docker.sock:/var/run/docker.sock:ro" ];
+      autoStart = true;
+      extraOptions = [ "--network=homelab" ];
+    };
+
   };
 
   # Prometheus runs as nobody, Grafana as uid 472, hence the odd owners.
@@ -78,5 +88,6 @@
     3000 # Grafana
     9090 # Prometheus
     9100 # node-exporter
+    8087 # Dozzle
   ];
 }
