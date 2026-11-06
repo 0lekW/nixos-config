@@ -86,10 +86,27 @@
       extraOptions = [ "--network=homelab" ];
     };
 
+    wealthfolio = {
+      image = "wealthfolio/wealthfolio:3.12.0@sha256:10420266494ee29e7d68585599d1de08cc070ddb1adbacf066426af3e0721dba";
+      ports = [ "8764:8088" ];
+      volumes = [
+        "/var/lib/wealthfolio:/data"
+      ];
+      environment = {
+        TZ = "Pacific/Auckland";
+        WF_LISTEN_ADDR = "0.0.0.0:8088";
+        WF_CORS_ALLOW_ORIGINS = "https://wealth.olek.co.nz";
+      };
+      environmentFiles = [ config.sops.secrets.wealthfolio_env.path ];
+      autoStart = true;
+      extraOptions = [ "--network=homelab" ];
+    };
+
   };
 
   sops.secrets.closet_env = { };
   sops.secrets.vikunja_env = { };
+  sops.secrets.wealthfolio_env = { };
 
   systemd.tmpfiles.rules = [
     "d /var/lib/filebrowser 0755 olek docker - -"
@@ -102,6 +119,7 @@
     "d /var/lib/oleks-closet/data 0755 olek docker - -"
     "d /var/lib/oleks-closet/uploads 0755 olek docker - -"
     "d /var/lib/vikunja 0755 olek docker - -"
+    "d /var/lib/wealthfolio 0755 olek docker - -"
   ];
 
   networking.firewall.allowedTCPPorts = [
@@ -111,6 +129,7 @@
     8761 # cjsonfmt-ui
     8762 # oleks-closet
     8763 # Vikunja
+    8764 # Wealthfolio
     25565 # Minecraft
   ];
 }

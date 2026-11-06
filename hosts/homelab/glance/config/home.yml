@@ -36,6 +36,10 @@
               url: https://tasks.olek.co.nz
               check-url: http://vikunja:3456
               icon: mdi:checkbox-marked-circle
+            - title: Wealthfolio
+              url: https://wealth.olek.co.nz
+              check-url: http://wealthfolio:8088
+              icon: mdi:chart-line
             - title: Open WebUI
               url: https://ai.olek.co.nz
               check-url: http://open-webui:8080

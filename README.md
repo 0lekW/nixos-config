@@ -36,6 +36,7 @@ My personal NixOS flake-based system configurations.
 - **[cjsonfmt-ui](https://github.com/0lekW/cjsonfmt-ui)** — Web UI for [cjsonfmt](https://github.com/0lekW/cjsonfmt) at `https://json.olek.co.nz` or `http://<homelab-ip>:8761`
 - **[oleks-closet](https://github.com/0lekW/oleks-closet)** — Wardrobe viewer and outfit designer at `https://closet.olek.co.nz` or `http://<homelab-ip>:8762`
 - **Vikunja** — Task manager at `https://tasks.olek.co.nz` or `http://<homelab-ip>:8763`
+- **[Wealthfolio](https://wealthfolio.app)** — Personal finance and investment tracker at `https://wealth.olek.co.nz` or `http://<homelab-ip>:8764`
 
 **To-do (homelab):**
 - [ ] Add HDDs to machine
