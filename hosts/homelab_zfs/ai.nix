@@ -2,7 +2,7 @@
 { pkgs, ... }:
 
 let
-  model = "qwen3.8:27b";
+  model = "qwen3:30b-a3b";
 in
 {
   virtualisation.oci-containers.containers.ollama = {
