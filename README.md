@@ -25,8 +25,7 @@ My personal NixOS flake-based system configurations.
 - **Jellyfin** — Media server at `http://jellyfin.olek.co.nz`, GPU transcoding
 
 **AI** (`ai.nix`)
-- **Ollama** — Local model hosting with GPU acceleration at `http://<homelab-ip>:11434`
-- **Open WebUI** — Web UI for LLMs at `https://ai.olek.co.nz` or `http://<homelab-ip>:3001`
+- **Open WebUI** — Web UI for LLMs at `https://ai.olek.co.nz` or `http://<homelab-ip>:3001`, talks to Ollama on the zfs host
 - **[lupin](https://github.com/0lekW/lupin)** — Ollama task scheduler and notifications at `https://lupin.olek.co.nz` or `http://<homelab-ip>:9500`
 
 **Apps** (`apps.nix`)
@@ -48,6 +47,7 @@ My personal NixOS flake-based system configurations.
 - **Samba** — SMB share of `/tank/shared`, LAN only
 - **FileBrowser** — Web file browser at `nfs.olek.co.nz` or `http://192.168.1.201:8080`
 - **Immich** — Photo manager and backups at `photos.olek.co.nz` or `http://192.168.1.201:2283`
+- **Ollama** — CPU inference host at `http://192.168.1.201:11434`, serves the homelab's Open WebUI and Lupin
 - **Dozzle agent** — Exposes this host's containers to the homelab's Dozzle
 
 **To-do (homelab_zfs):**
