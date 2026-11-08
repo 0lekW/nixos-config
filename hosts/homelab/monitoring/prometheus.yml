@@ -5,8 +5,11 @@ global:
 scrape_configs:
   - job_name: "node"
     static_configs:
-      - targets: ["192.168.1.200:9100"]
+      - targets:
+          - "192.168.1.200:9100" # homelab
+          - "192.168.1.201:9100" # zfs
 
   - job_name: "cadvisor"
     static_configs:
-    - targets: ["cadvisor:8080"]
+      - targets: ["cadvisor:8080"]        # homelab (docker DNS)
+      - targets: ["192.168.1.201:8089"]   # zfs (LAN)

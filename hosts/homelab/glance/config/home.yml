@@ -112,6 +112,17 @@
               source: https://graphs.olek.co.nz/d/7ea7d072-ee14-4401-a784-bd606b8e01dd/dash2?orgId=1&kiosk=1&theme=dark
               height: 550
 
+        - type: group
+          widgets:
+            - type: iframe
+              title: zfs General Monitoring
+              source: https://graphs.olek.co.nz/d/b0519aa9-6513-44e4-9cf8-ccfbadd56389/dash3?orgId=1&kiosk=1&theme=dark
+              height: 550
+            - type: iframe
+              title: zfs Docker Monitoring
+              source: https://graphs.olek.co.nz/d/8ea7d072-ee14-4401-a784-bd606b8e01de/dash4?orgId=1&kiosk=1&theme=dark
+              height: 550
+
     - size: small
       widgets:
         - type: weather

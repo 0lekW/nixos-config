@@ -111,7 +111,7 @@
             "uid": "eeyqekat80mwwb"
           },
           "editorMode": "code",
-          "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\",instance=\"192.168.1.200:9100\"}[5m])) * 100)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -178,7 +178,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 1024 / 1024 / 1024",
+          "expr": "(node_memory_MemTotal_bytes{instance=\"192.168.1.200:9100\"} - node_memory_MemAvailable_bytes{instance=\"192.168.1.200:9100\"}) / 1024 / 1024 / 1024",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"

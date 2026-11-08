@@ -112,7 +112,7 @@
             "type": "prometheus",
             "uid": "eeyqekat80mwwb"
           },
-          "expr": "rate(container_cpu_user_seconds_total{image!=\"\"}[5m]) * 100",
+          "expr": "rate(container_cpu_user_seconds_total{image!=\"\",instance=\"cadvisor:8080\"}[5m]) * 100",
           "intervalFactor": 2,
           "legendFormat": "{{name}}",
           "metric": "cpu",
@@ -215,7 +215,7 @@
             "type": "prometheus",
             "uid": "eeyqekat80mwwb"
           },
-          "expr": "container_memory_usage_bytes{image!=\"\"}",
+          "expr": "container_memory_usage_bytes{image!=\"\",instance=\"cadvisor:8080\"}",
           "hide": false,
           "intervalFactor": 2,
           "legendFormat": "{{name}}",
@@ -316,7 +316,7 @@
             "type": "prometheus",
             "uid": "eeyqekat80mwwb"
           },
-          "expr": "irate(container_network_receive_bytes_total{image!=\"\"}[5m])",
+          "expr": "irate(container_network_receive_bytes_total{image!=\"\",instance=\"cadvisor:8080\"}[5m])",
           "intervalFactor": 2,
           "legendFormat": "{{name}}",
           "metric": "container_network_receive_bytes_total",
