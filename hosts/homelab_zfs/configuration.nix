@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     ../../modules/common.nix
     ./ai.nix
+    ./monitoring.nix
   ];
 
   networking.hostName = "nixos_zfs_storage";
