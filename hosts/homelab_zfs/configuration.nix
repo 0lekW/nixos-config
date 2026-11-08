@@ -4,6 +4,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/common.nix
+    ./ai.nix
   ];
 
   networking.hostName = "nixos_zfs_storage";
