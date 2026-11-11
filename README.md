@@ -5,7 +5,7 @@ My personal NixOS flake-based system configurations.
 ## Machines
 
 ### homelab
-**Hardware:** RYZEN 5500, 16GB DDR4 RAM, GTX 1060, 1TB NVMe SSD.
+**Hardware:** RYZEN 5500, 16GB DDR4 RAM, GTX 1060, 1TB NVMe SSD, 4TB HDD (Seagate ST4000VX007, ext4, mounted at `/srv/torrents`).
 **Purpose:** Dashboard and main services.
 
 **Network** (`network.nix`)
@@ -38,7 +38,7 @@ My personal NixOS flake-based system configurations.
 - **[Wealthfolio](https://wealthfolio.app)** — Personal finance and investment tracker at `https://wealth.olek.co.nz` or `http://<homelab-ip>:8764`
 
 **To-do (homelab):**
-- [ ] Add HDDs to machine
+- [x] Add HDDs to machine
 
 ### homelab_zfs
 **Hardware:** Intel(R) Xeon(R) E E-2414, 32GB DDR5 RAM, 4x460GB SSD.

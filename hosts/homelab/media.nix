@@ -49,6 +49,21 @@
 
   };
 
+  # The torrent library lives on the 4TB HDD. nofail keeps a missing disk from
+  # blocking boot; the mount guards stop the containers from starting (and
+  # filling an empty dir on the NVMe) when it is not mounted.
+  fileSystems."/srv/torrents" = {
+    device = "/dev/disk/by-label/media";
+    fsType = "ext4";
+    options = [
+      "noatime"
+      "nofail"
+    ];
+  };
+
+  systemd.services.docker-qbittorrent.unitConfig.RequiresMountsFor = "/srv/torrents";
+  systemd.services.docker-jellyfin.unitConfig.RequiresMountsFor = "/srv/torrents";
+
   systemd.tmpfiles.rules = [
     "d /var/lib/qbittorrent 0755 olek docker - -"
     "d /var/lib/qbittorrent/config 0755 olek docker - -"

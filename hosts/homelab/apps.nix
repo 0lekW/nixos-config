@@ -108,6 +108,10 @@
   sops.secrets.vikunja_env = { };
   sops.secrets.wealthfolio_env = { };
 
+  # FileBrowser serves /srv, so it must not start before the torrent disk is
+  # mounted there - a bind mount made before the mount exists shows an empty dir.
+  systemd.services.docker-filebrowser.unitConfig.RequiresMountsFor = "/srv/torrents";
+
   systemd.tmpfiles.rules = [
     "d /var/lib/filebrowser 0755 olek docker - -"
     "d /srv/minecraft 0755 olek docker - -"
