@@ -57,16 +57,16 @@ My personal NixOS flake-based system configurations.
 **Hardware:** Intel i5-2400 (Sandy Bridge iGPU), 16GB DDR3 RAM, 1TB SATA SSD, 2x 4TB HDD (Seagate ST4000VX007, striped ZFS pool `tank`, ~7TB, no redundancy).
 **Purpose:** Jozef's home server, on his own LAN at `192.168.0.200`. Olek reaches it over Tailscale; the LAN is advertised as a subnet route, so every link below works remotely once the route is approved.
 
-- **Pi-hole** — DNS ad blocker for the house at `http://192.168.0.200:8082/admin`
+- **Pi-hole** — DNS ad blocker for the house at `https://pihole.mhr.olek.co.nz/admin`
 - **Tailscale** — Joins Olek's tailnet as `mhrlab`, advertises `192.168.0.0/24`
-- **Nginx Proxy Manager** — Reverse proxy for `*.mhr.olek.co.nz`, admin UI at `http://192.168.0.200:81`
-- **Glance** — Dashboard at `http://192.168.0.200:8080`
-- **Grafana / Prometheus / node-exporter** — Host metrics at `http://192.168.0.200:3000` and `:9090`
-- **Dozzle** — Container logs at `http://192.168.0.200:8087`
-- **Immich** — Photos at `http://192.168.0.200:2283`, library on `tank/photos`
-- **Frigate** — Cameras at `https://192.168.0.200:8971`, recordings on `tank/frigate`. Cameras and retention are set in its UI, not here
-- **qBittorrent** — Torrents at `http://192.168.0.200:8081`, downloads to `tank/media/downloads`
-- **Jellyfin** — Media server at `http://192.168.0.200:8096`, library on `tank/media`
+- **Nginx Proxy Manager** — Reverse proxy for `*.mhr.olek.co.nz`, admin UI at `https://proxy.mhr.olek.co.nz`
+- **Glance** — Dashboard at `https://home.mhr.olek.co.nz`
+- **Grafana / Prometheus / node-exporter** — Host metrics at `https://graphs.mhr.olek.co.nz` and `https://prometheus.mhr.olek.co.nz`
+- **Dozzle** — Container logs at `https://dozzle.mhr.olek.co.nz`
+- **Immich** — Photos at `https://photos.mhr.olek.co.nz`, library on `tank/photos`
+- **Frigate** — Cameras at `https://cameras.mhr.olek.co.nz`, recordings on `tank/frigate`. Cameras and retention are set in its UI, not here
+- **qBittorrent** — Torrents at `https://torrent.mhr.olek.co.nz`, downloads to `tank/media/downloads`
+- **Jellyfin** — Media server at `https://jellyfin.mhr.olek.co.nz`, library on `tank/media`
 - **Samba** — `shared` and `media` shares, LAN only
 
 The iGPU only hardware-decodes H.264 (i965 VA-API driver), so cameras and
