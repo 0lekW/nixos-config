@@ -4,6 +4,10 @@
 # retention live in Frigate's own config.yml under /var/lib/frigate/config,
 # which Frigate creates on first start and you edit from its web UI.
 # Recordings go to tank/frigate; set a retention there or they fill the pool.
+#
+# No GPU passthrough: the Sandy Bridge iGPU can't decode the NVR's H.265 and
+# its VA-API scaler fails even on H.264, and Frigate auto-picks VA-API when it
+# sees /dev/dri. Decoding the small detect streams on the CPU is cheap enough.
 { config, ... }:
 
 {
@@ -11,9 +15,6 @@
     image = "ghcr.io/blakeblackshear/frigate:0.18.2@sha256:fd60f99ffd4eb6c42360ed4e14953e270586f239309ab3983e55b2e97ffac09a";
     environment = {
       TZ = "Pacific/Auckland";
-      # Sandy Bridge iGPU: use `hwaccel_args: preset-vaapi` in config.yml.
-      # It only decodes H.264, so set the cameras to H.264, not H.265.
-      LIBVA_DRIVER_NAME = "i965";
     };
     # FRIGATE_RTSP_USER / FRIGATE_RTSP_PASSWORD for the NVR, so config.yml can
     # say {FRIGATE_RTSP_PASSWORD} instead of holding the password.
@@ -31,7 +32,6 @@
     autoStart = true;
     extraOptions = [
       "--network=mhrlab"
-      "--device=/dev/dri:/dev/dri"
       "--shm-size=512m"
       "--tmpfs=/tmp/cache:size=1g"
     ];
