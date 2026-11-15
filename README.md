@@ -53,13 +53,50 @@ My personal NixOS flake-based system configurations.
 **To-do (homelab_zfs):**
 - [ ] 
 
+### mhrLab
+**Hardware:** Intel i5-2400 (Sandy Bridge iGPU), 16GB DDR3 RAM, 1TB SATA SSD, 2x 4TB HDD (Seagate ST4000VX007, ZFS mirror `tank`).
+**Purpose:** Jozef's home server, on his own LAN at `192.168.0.200`. Olek reaches it over Tailscale; the LAN is advertised as a subnet route, so every link below works remotely once the route is approved.
+
+- **Pi-hole** — DNS ad blocker for the house at `http://192.168.0.200:8082/admin`
+- **Tailscale** — Joins Olek's tailnet as `mhrlab`, advertises `192.168.0.0/24`
+- **Glance** — Dashboard at `http://192.168.0.200:8080`
+- **Grafana / Prometheus / node-exporter / cAdvisor** — Metrics at `http://192.168.0.200:3000` and `:9090`
+- **Dozzle** — Container logs at `http://192.168.0.200:8087`
+- **Immich** — Photos at `http://192.168.0.200:2283`, library on `tank/photos`
+- **Frigate** — Cameras at `https://192.168.0.200:8971`, recordings on `tank/frigate`. Cameras and retention are set in its UI, not here
+- **qBittorrent** — Torrents at `http://192.168.0.200:8081`, downloads to `tank/media/downloads`
+- **Jellyfin** — Media server at `http://192.168.0.200:8096`, library on `tank/media`
+- **Samba** — `shared` and `media` shares, LAN only
+
+The iGPU only hardware-decodes H.264 (i965 VA-API driver), so cameras and
+Jellyfin transcoding should stick to H.264.
+
+**First-time setup** (once, on the machine):
+```bash
+# ZFS mirror across the two HDDs (use the by-id names from `ls -l /dev/disk/by-id/`)
+sudo zpool create -o ashift=12 -O compression=lz4 -O atime=off -O mountpoint=/tank \
+  tank mirror /dev/disk/by-id/ata-ST4000VX007-<disk1> /dev/disk/by-id/ata-ST4000VX007-<disk2>
+sudo zfs create tank/shared
+sudo zfs create -o recordsize=1M tank/media
+sudo zfs create tank/photos
+sudo zfs create -o recordsize=1M tank/frigate
+
+sudo smbpasswd -a jozef   # Samba password
+```
+
+**To-do (mhrLab):**
+- [ ] Point the router's DHCP DNS at `192.168.0.200` (Pi-hole)
+- [ ] Add the four cameras in Frigate, with a recording retention
+- [ ] Backups of `tank/photos`
+
 ---
 
 ## Repository layout
 
 ```
-flake.nix              both machines, plus the sops-nix input
+flake.nix              every machine, plus the sops-nix input
 modules/common.nix     settings shared by every host
+modules/olek-lan.nix   gateway, DNS and admin user for the two hosts on Olek's LAN
 secrets/               encrypted credentials, one file per host
 hosts/<host>/          hardware, networking, anything host-specific
   monitoring/          module plus the Prometheus and Grafana config it mounts

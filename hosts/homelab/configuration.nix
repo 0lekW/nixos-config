@@ -4,6 +4,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/common.nix
+    ../../modules/olek-lan.nix
     ./monitoring
     ./media.nix
     ./ai.nix

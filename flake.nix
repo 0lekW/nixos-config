@@ -60,5 +60,21 @@
           ./hosts/homelab_zfs/configuration.nix
         ];
       };
+
+      # Jozef's machine, on his own LAN. Olek reaches it over Tailscale.
+      nixosConfigurations.mhrLab = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          (
+            { ... }:
+            {
+              nixpkgs.overlays = [ overlay-unstable ];
+            }
+          )
+          sops-nix.nixosModules.sops
+          { sops.package = sops-nix.packages.${system}.sops-install-secrets; }
+          ./hosts/mhrLab/configuration.nix
+        ];
+      };
     };
 }

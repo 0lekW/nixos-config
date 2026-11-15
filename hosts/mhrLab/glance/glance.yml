@@ -1,0 +1,68 @@
+pages:
+  - name: Home
+    columns:
+      - size: small
+        widgets:
+          - type: calendar
+            first-day-of-week: monday
+
+          - type: monitor
+            cache: 1m
+            title: Home
+            sites:
+              - title: Jellyfin
+                url: http://192.168.0.200:8096
+                check-url: http://jellyfin:8096
+                icon: si:jellyfin
+              - title: Immich
+                url: http://192.168.0.200:2283
+                check-url: http://immich-server:2283
+                icon: si:immich
+              - title: Frigate
+                url: https://192.168.0.200:8971
+                check-url: https://frigate:8971
+                allow-insecure: true
+                icon: si:frigate
+              - title: qBittorrent
+                url: http://192.168.0.200:8081
+                check-url: http://qbittorrent:8081
+                icon: si:qbittorrent
+
+          - type: monitor
+            cache: 1m
+            title: Infra
+            sites:
+              - title: Pi-hole
+                url: http://192.168.0.200:8082/admin
+                check-url: http://pihole:8082/admin
+                icon: si:pihole
+              - title: Grafana
+                url: http://192.168.0.200:3000
+                check-url: http://grafana:3000
+                icon: si:grafana
+              - title: Prometheus
+                url: http://192.168.0.200:9090
+                check-url: http://prometheus:9090
+                icon: si:prometheus
+              - title: Dozzle
+                url: http://192.168.0.200:8087
+                check-url: http://dozzle:8080
+                icon: mdi:text-box-search
+
+      - size: full
+        widgets:
+          - type: iframe
+            title: System
+            source: http://192.168.0.200:3000/d/b0519aa9-6513-44e4-9cf8-ccfbadd56389/node?orgId=1&kiosk=1&theme=dark
+            height: 550
+          - type: iframe
+            title: Containers
+            source: http://192.168.0.200:3000/d/7ea7d072-ee14-4401-a784-bd606b8e01dd/containers?orgId=1&kiosk=1&theme=dark
+            height: 550
+
+      - size: small
+        widgets:
+          - type: weather
+            location: Auckland, New Zealand
+            units: metric
+            hour-format: 24h

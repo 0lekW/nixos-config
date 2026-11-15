@@ -1,19 +1,12 @@
-# Shared by every host.
-{ pkgs, ... }:
+# Shared by every host. Network and user accounts live in each host (or in
+# olek-lan.nix for the two machines on Olek's LAN).
+{ ... }:
 
 {
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking.networkmanager.enable = true;
-
-  # Same LAN, same router.
-  networking.useDHCP = false;
-  networking.defaultGateway = "192.168.1.254";
-  networking.nameservers = [
-    "1.1.1.1"
-    "8.8.8.8"
-  ];
 
   nix.settings.experimental-features = [
     "nix-command"
@@ -42,17 +35,6 @@
     variant = "";
   };
   console.keyMap = "us";
-
-  users.users.olek = {
-    isNormalUser = true;
-    description = "Alex Wardega";
-    extraGroups = [
-      "networkmanager"
-      "wheel"
-      "docker"
-    ];
-    packages = with pkgs; [ ];
-  };
 
   # Key-only SSH, no root login, fail2ban in front.
   services.openssh = {

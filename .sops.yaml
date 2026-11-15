@@ -3,6 +3,8 @@ keys:
   - &olek age1wztksz69ygd99uv084sd3ptv475a4g5gdcypfrj8zyc686np95zsj9mn9l
   - &homelab age1q72y4dvg7wmyn0tzk5rzt8l5w3pmtxd8l37qjp2sasmx8n06vq4sce54rf
   - &homelab_zfs age15hfraqqf5ck39ta3jpa75wvkzm5k96djfatfdh8ztz2hylrzxvmsq4apuz
+  - &olek_mac age1wxcfewvc4kpz4rw4nevudwnu8g24clzcxscz0vkctgl80st82y7q9750e0
+  - &mhrLab age18mwhmksky0gcxp9wmmys0g8ljac0j6xl5wd92xs5h2cws5f4tskqpxm9dn
 
 creation_rules:
   - path_regex: secrets/homelab\.yaml$
@@ -15,3 +17,8 @@ creation_rules:
       - age:
           - *olek
           - *homelab_zfs
+  - path_regex: secrets/mhrLab\.yaml$
+    key_groups:
+      - age:
+          - *olek_mac
+          - *mhrLab
