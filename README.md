@@ -59,6 +59,7 @@ My personal NixOS flake-based system configurations.
 
 - **Pi-hole** — DNS ad blocker for the house at `http://192.168.0.200:8082/admin`
 - **Tailscale** — Joins Olek's tailnet as `mhrlab`, advertises `192.168.0.0/24`
+- **Nginx Proxy Manager** — Reverse proxy for `*.mhr.olek.co.nz`, admin UI at `http://192.168.0.200:81`
 - **Glance** — Dashboard at `http://192.168.0.200:8080`
 - **Grafana / Prometheus / node-exporter** — Host metrics at `http://192.168.0.200:3000` and `:9090`
 - **Dozzle** — Container logs at `http://192.168.0.200:8087`
