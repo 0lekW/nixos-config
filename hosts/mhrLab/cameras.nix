@@ -4,7 +4,7 @@
 # retention live in Frigate's own config.yml under /var/lib/frigate/config,
 # which Frigate creates on first start and you edit from its web UI.
 # Recordings go to tank/frigate; set a retention there or they fill the pool.
-{ ... }:
+{ config, ... }:
 
 {
   virtualisation.oci-containers.containers.frigate = {
@@ -15,6 +15,9 @@
       # It only decodes H.264, so set the cameras to H.264, not H.265.
       LIBVA_DRIVER_NAME = "i965";
     };
+    # FRIGATE_RTSP_USER / FRIGATE_RTSP_PASSWORD for the NVR, so config.yml can
+    # say {FRIGATE_RTSP_PASSWORD} instead of holding the password.
+    environmentFiles = [ config.sops.secrets.frigate_env.path ];
     volumes = [
       "/var/lib/frigate/config:/config"
       "/tank/frigate:/media/frigate"
@@ -33,6 +36,8 @@
       "--tmpfs=/tmp/cache:size=1g"
     ];
   };
+
+  sops.secrets.frigate_env = { };
 
   systemd.services.docker-frigate = {
     requires = [ "zfs-mount.service" ];
