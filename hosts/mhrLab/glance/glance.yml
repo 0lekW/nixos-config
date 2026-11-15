@@ -54,7 +54,7 @@ pages:
           - type: iframe
             title: System
             source: http://192.168.0.200:3000/d/b0519aa9-6513-44e4-9cf8-ccfbadd56389/node?orgId=1&kiosk=1&theme=dark
-            height: 550
+            height: 620
 
       - size: small
         widgets:
