@@ -10,20 +10,20 @@ pages:
             cache: 1m
             title: Home
             sites:
-              - title: Movies & TV (Jellyfin)
+              - title: Movies & TV
                 url: https://jellyfin.mhr.olek.co.nz
                 check-url: http://jellyfin:8096
                 icon: si:jellyfin
-              - title: Photos (Immich)
+              - title: Photos
                 url: https://photos.mhr.olek.co.nz
                 check-url: http://immich-server:2283
                 icon: si:immich
-              - title: Cameras (Frigate)
+              - title: Cameras
                 url: https://cameras.mhr.olek.co.nz
                 check-url: https://frigate:8971
                 allow-insecure: true
                 icon: si:frigate
-              - title: Downloads (qBittorrent)
+              - title: Downloads
                 url: https://torrent.mhr.olek.co.nz
                 check-url: http://qbittorrent:8081
                 icon: si:qbittorrent
@@ -32,23 +32,23 @@ pages:
             cache: 1m
             title: Admin
             sites:
-              - title: Ad Blocker (Pi-hole)
+              - title: Ad Blocker
                 url: https://pihole.mhr.olek.co.nz/admin
                 check-url: http://pihole:8082/admin
                 icon: si:pihole
-              - title: System Graphs (Grafana)
+              - title: System Graphs
                 url: https://graphs.mhr.olek.co.nz
                 check-url: http://grafana:3000
                 icon: si:grafana
-              - title: Metrics Database (Prometheus)
+              - title: Metrics Database
                 url: https://prometheus.mhr.olek.co.nz
                 check-url: http://prometheus:9090
                 icon: si:prometheus
-              - title: Web Addresses (Nginx Proxy Manager)
+              - title: Web Addresses
                 url: https://proxy.mhr.olek.co.nz
                 check-url: http://nginx-proxy-manager:81
                 icon: si:nginx
-              - title: Service Logs (Dozzle)
+              - title: Service Logs
                 url: https://dozzle.mhr.olek.co.nz
                 check-url: http://dozzle:8080
                 icon: mdi:text-box-search
@@ -59,10 +59,3 @@ pages:
             title: Machine Health
             source: https://graphs.mhr.olek.co.nz/d/b0519aa9-6513-44e4-9cf8-ccfbadd56389/node?orgId=1&kiosk=1&theme=dark
             height: 620
-
-      - size: small
-        widgets:
-          - type: weather
-            location: Auckland, New Zealand
-            units: metric
-            hour-format: 24h
