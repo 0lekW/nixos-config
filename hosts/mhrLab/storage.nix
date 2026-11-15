@@ -24,6 +24,7 @@
     "d /tank/shared 0775 jozef users -"
     "d /tank/media 0775 jozef users -"
     "d /tank/media/downloads 0775 jozef users -"
+    "d /tank/media/downloads/incomplete 0775 jozef users -"
     "d /tank/media/movies 0775 jozef users -"
     "d /tank/media/tv 0775 jozef users -"
   ];

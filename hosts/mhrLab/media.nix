@@ -24,7 +24,9 @@ in
       };
       volumes = [
         "/var/lib/qbittorrent/config:/config"
-        "/tank/media/downloads:/downloads"
+        # Same path as in Jellyfin, so the movies/tv categories save straight
+        # into the libraries.
+        "/tank/media:/media"
       ];
       ports = [
         "8081:8081" # Web UI
