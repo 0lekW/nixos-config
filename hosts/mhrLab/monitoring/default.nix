@@ -33,20 +33,6 @@
       extraOptions = [ "--network=mhrlab" ];
     };
 
-    cadvisor = {
-      image = "gcr.io/cadvisor/cadvisor@sha256:3cde6faf0791ebf7b41d6f8ae7145466fed712ea6f252c935294d2608b1af388";
-      volumes = [
-        "/:/rootfs:ro"
-        "/var/run:/var/run:ro"
-        "/sys:/sys:ro"
-        "/var/lib/docker/:/var/lib/docker:ro"
-      ];
-      extraOptions = [
-        "--privileged"
-        "--network=mhrlab"
-      ];
-      autoStart = true;
-    };
 
     grafana = {
       image = "grafana/grafana@sha256:a1701c2180249361737a99a01bc770db39381640e4d631825d38ff4535efa47d";

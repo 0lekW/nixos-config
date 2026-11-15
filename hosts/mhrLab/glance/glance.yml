@@ -55,10 +55,6 @@ pages:
             title: System
             source: http://192.168.0.200:3000/d/b0519aa9-6513-44e4-9cf8-ccfbadd56389/node?orgId=1&kiosk=1&theme=dark
             height: 550
-          - type: iframe
-            title: Containers
-            source: http://192.168.0.200:3000/d/7ea7d072-ee14-4401-a784-bd606b8e01dd/containers?orgId=1&kiosk=1&theme=dark
-            height: 550
 
       - size: small
         widgets:

@@ -60,7 +60,7 @@ My personal NixOS flake-based system configurations.
 - **Pi-hole** — DNS ad blocker for the house at `http://192.168.0.200:8082/admin`
 - **Tailscale** — Joins Olek's tailnet as `mhrlab`, advertises `192.168.0.0/24`
 - **Glance** — Dashboard at `http://192.168.0.200:8080`
-- **Grafana / Prometheus / node-exporter / cAdvisor** — Metrics at `http://192.168.0.200:3000` and `:9090`
+- **Grafana / Prometheus / node-exporter** — Host metrics at `http://192.168.0.200:3000` and `:9090`
 - **Dozzle** — Container logs at `http://192.168.0.200:8087`
 - **Immich** — Photos at `http://192.168.0.200:2283`, library on `tank/photos`
 - **Frigate** — Cameras at `https://192.168.0.200:8971`, recordings on `tank/frigate`. Cameras and retention are set in its UI, not here
