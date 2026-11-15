@@ -12,6 +12,9 @@
 {
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [ "tank" ];
+  # Root is ext4, so the forced root-pool import never applies; false is the
+  # safer default from 26.11 on.
+  boot.zfs.forceImportRoot = false;
 
   services.zfs.autoScrub.enable = true; # monthly integrity check
 
