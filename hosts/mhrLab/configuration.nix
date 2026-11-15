@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   imports = [
@@ -31,8 +31,7 @@
     "8.8.8.8"
   ];
 
-  # Password is set by hand with `passwd` (and `smbpasswd -a jozef` for Samba);
-  # SSH is key-only.
+  # Password is set by hand with `passwd` (and `smbpasswd -a jozef` for Samba).
   users.users.jozef = {
     isNormalUser = true;
     extraGroups = [
@@ -45,6 +44,10 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC99At+lExwH5lWMdrgM88SjInaUs0PH1WKaB93rK98x"
     ];
   };
+
+  # Password SSH as well as keys, so Olek can get in from any machine. SSH is
+  # only reachable on this LAN and over Tailscale, and fail2ban is on.
+  services.openssh.settings.PasswordAuthentication = lib.mkForce true;
 
   # i5-2400 iGPU (Sandy Bridge). Only the old i965 VA-API driver supports it,
   # and only for H.264. Jellyfin and Frigate get /dev/dri passed through.
