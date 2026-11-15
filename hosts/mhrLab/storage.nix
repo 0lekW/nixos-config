@@ -1,4 +1,5 @@
-# The two 4TB HDDs as a ZFS mirror ("tank"), and a Samba share on it.
+# The two 4TB HDDs striped into one ZFS pool ("tank", ~7TB, no redundancy:
+# lose either disk and the whole pool is gone), and a Samba share on it.
 #
 # The pool and its datasets are created once by hand (see README); this file
 # only imports, scrubs and shares them.
