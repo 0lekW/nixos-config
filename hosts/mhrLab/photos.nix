@@ -68,7 +68,9 @@ in
   systemd.tmpfiles.rules = [
     "d /var/lib/immich 0750 root root - -"
     "d /var/lib/immich/model-cache 0750 root root - -"
-    "d /var/lib/immich/postgres 0700 root root - -"
+    # Postgres runs as uid 999 in its image. tmpfiles re-applies this owner on
+    # every boot and rebuild, so root here locks the database out.
+    "d /var/lib/immich/postgres 0700 999 999 - -"
   ];
 
   networking.firewall.allowedTCPPorts = [ 2283 ];
