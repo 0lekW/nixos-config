@@ -24,6 +24,8 @@
     "d /tank/shared 0775 jozef users -"
     "d /tank/media 0775 jozef users -"
     "d /tank/media/downloads 0775 jozef users -"
+    "d /tank/media/movies 0775 jozef users -"
+    "d /tank/media/tv 0775 jozef users -"
   ];
 
   # SMB shares, LAN only. Samba keeps its own password: `sudo smbpasswd -a jozef`.
