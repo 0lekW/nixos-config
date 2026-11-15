@@ -84,5 +84,5 @@
 
   virtualisation.oci-containers.backend = "docker";
 
-  system.stateVersion = "25.05";
+  system.stateVersion = "26.05"; # installed from the 26.05 ISO
 }

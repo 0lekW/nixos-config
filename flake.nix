@@ -3,6 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    # mhrLab was installed from a 26.05 ISO; keep it there rather than downgrade.
+    nixpkgs-mhrlab.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
 
@@ -15,6 +17,7 @@
     {
       self,
       nixpkgs,
+      nixpkgs-mhrlab,
       nixpkgs-unstable,
       flake-utils,
       sops-nix,
@@ -62,7 +65,7 @@
       };
 
       # Jozef's machine, on his own LAN. Olek reaches it over Tailscale.
-      nixosConfigurations.mhrLab = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.mhrLab = nixpkgs-mhrlab.lib.nixosSystem {
         inherit system;
         modules = [
           (
