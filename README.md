@@ -55,40 +55,22 @@ My personal NixOS flake-based system configurations.
 
 ### mhrLab
 **Hardware:** Intel i5-2400 (Sandy Bridge iGPU), 16GB DDR3 RAM, 1TB SATA SSD, 2x 4TB HDD (Seagate ST4000VX007, striped ZFS pool `tank`, ~7TB, no redundancy).
-**Purpose:** Jozef's home server, on his own LAN at `192.168.0.200`. Olek reaches it over Tailscale; the LAN is advertised as a subnet route, so every link below works remotely once the route is approved.
+**Purpose:** Home server at seperate location, at `192.168.0.200`. Mostly used as a media server and for security camera footage.
 
 - **Pi-hole** — DNS ad blocker for the house at `https://pihole.mhr.olek.co.nz/admin`
-- **Tailscale** — Joins Olek's tailnet as `mhrlab`, advertises `192.168.0.0/24`
+- **Tailscale** — Joins existing tailnet as `mhrlab`, advertises `192.168.0.0/24`
 - **Nginx Proxy Manager** — Reverse proxy for `*.mhr.olek.co.nz`, admin UI at `https://proxy.mhr.olek.co.nz`
 - **Glance** — Dashboard at `https://home.mhr.olek.co.nz`
 - **Grafana / Prometheus / node-exporter** — Host metrics at `https://graphs.mhr.olek.co.nz` and `https://prometheus.mhr.olek.co.nz`
 - **Dozzle** — Container logs at `https://dozzle.mhr.olek.co.nz`
 - **Immich** — Photos at `https://photos.mhr.olek.co.nz`, library on `tank/photos`
-- **Frigate** — Cameras at `https://cameras.mhr.olek.co.nz`, recordings on `tank/frigate`. Cameras and retention are set in its UI, not here
+- **Frigate** — Cameras at `https://cameras.mhr.olek.co.nz`, recordings on `tank/frigate`. 
 - **qBittorrent** — Torrents at `https://torrent.mhr.olek.co.nz`, downloads to `tank/media/downloads`
 - **Jellyfin** — Media server at `https://jellyfin.mhr.olek.co.nz`, library on `tank/media`
 - **Samba** — `shared` and `media` shares, LAN only
 
-The iGPU only hardware-decodes H.264 (i965 VA-API driver), so cameras and
-Jellyfin transcoding should stick to H.264.
-
-**First-time setup** (once, on the machine):
-```bash
-# ZFS stripe across the two HDDs (no redundancy; photos are also backed up to a WD My Cloud)
-sudo zpool create -o ashift=12 -O compression=lz4 -O atime=off -O mountpoint=/tank \
-  tank /dev/disk/by-id/ata-ST4000VX007-2DT166_ZDH39MDR /dev/disk/by-id/ata-ST4000VX007-2DT166_ZDH4NDCH
-sudo zfs create tank/shared
-sudo zfs create -o recordsize=1M tank/media
-sudo zfs create tank/photos
-sudo zfs create -o recordsize=1M tank/frigate
-
-sudo smbpasswd -a jozef   # Samba password
-```
-
 **To-do (mhrLab):**
-- [ ] Point the router's DHCP DNS at `192.168.0.200` (Pi-hole)
-- [ ] Add the four cameras in Frigate, with a recording retention
-- [ ] Keep the WD My Cloud photo backup up to date (the pool has no redundancy)
+- [ ] 
 
 ---
 
