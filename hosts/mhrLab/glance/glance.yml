@@ -3,9 +3,6 @@ pages:
     columns:
       - size: small
         widgets:
-          - type: calendar
-            first-day-of-week: monday
-
           - type: monitor
             cache: 1m
             title: Home
@@ -59,3 +56,8 @@ pages:
             title: Machine Health
             source: https://graphs.mhr.olek.co.nz/d/b0519aa9-6513-44e4-9cf8-ccfbadd56389/node?orgId=1&kiosk=1&theme=dark
             height: 620
+
+      - size: small
+        widgets:
+          - type: calendar
+            first-day-of-week: monday
